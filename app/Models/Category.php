@@ -16,4 +16,9 @@ class Category extends Model
         'parent_id',
         'order',
     ];
+
+    public function services()
+    {
+        return $this->hasMany(Service::class);
+    }
 }
