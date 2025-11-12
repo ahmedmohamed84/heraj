@@ -68,9 +68,6 @@
             <x-input-label for="city_id" :value="__('City')" />
             <select id="city_id" name="city_id" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
                 <option value="">{{ __('Select City') }}</option>
-                @foreach ($cities as $city)
-                    <option value="{{ $city->id }}" @selected(old('city_id', $user->city_id) == $city->id)>{{ $city->name }}</option>
-                @endforeach
             </select>
             <x-input-error class="mt-2" :messages="$errors->get('city_id')" />
         </div>
@@ -90,3 +87,38 @@
         </div>
     </form>
 </section>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const regionSelect = document.getElementById('region_id');
+        const citySelect = document.getElementById('city_id');
+        const allCities = @json($cities);
+        const oldCityId = {{ old('city_id', $user->city_id ?? 'null') }};
+
+        function updateCities(selectedRegionId) {
+            citySelect.innerHTML = '<option value="">{{ __("Select City") }}</option>';
+            if (selectedRegionId) {
+                const citiesInRegion = allCities.filter(city => city.region_id == selectedRegionId);
+                citiesInRegion.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            }
+            // Select the old city if it exists and belongs to the current region
+            if (oldCityId && citySelect.querySelector(`option[value="${oldCityId}"]`)) {
+                citySelect.value = oldCityId;
+            }
+        }
+
+        regionSelect.addEventListener('change', function () {
+            updateCities(this.value);
+        });
+
+        // Initial call to populate cities based on the pre-selected region (if any)
+        updateCities(regionSelect.value);
+    });
+</script>
+@endpush
