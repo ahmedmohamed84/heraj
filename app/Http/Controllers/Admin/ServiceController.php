@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\City;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::with(['category', 'user'])->latest()->paginate(10);
+        $services = Service::with(['category', 'user', 'city'])->latest()->paginate(10);
         return view('admin.services.index', compact('services'));
     }
 
@@ -27,7 +28,8 @@ class ServiceController extends Controller
     {
         $categories = Category::all();
         $users = User::all();
-        return view('admin.services.create', compact('categories', 'users'));
+        $cities = City::all();
+        return view('admin.services.create', compact('categories', 'users', 'cities'));
     }
 
     /**
@@ -41,6 +43,7 @@ class ServiceController extends Controller
             'price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
+            'city_id' => 'required|exists:cities,id',
             'status' => 'required|in:pending,approved,rejected',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -69,7 +72,8 @@ class ServiceController extends Controller
     {
         $categories = Category::all();
         $users = User::all();
-        return view('admin.services.edit', compact('service', 'categories', 'users'));
+        $cities = City::all();
+        return view('admin.services.edit', compact('service', 'categories', 'users', 'cities'));
     }
 
     /**
@@ -83,6 +87,7 @@ class ServiceController extends Controller
             'price' => 'required|numeric',
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
+            'city_id' => 'required|exists:cities,id',
             'status' => 'required|in:pending,approved,rejected',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);

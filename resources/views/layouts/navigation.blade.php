@@ -28,6 +28,12 @@
                         <x-nav-link :href="route('admin.services.index')" :active="request()->routeIs('admin.services.index')">
                             {{ __('Services') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.regions.index')" :active="request()->routeIs('admin.regions.index')">
+                            {{ __('Regions') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.cities.index')" :active="request()->routeIs('admin.cities.index')">
+                            {{ __('Cities') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -97,6 +103,12 @@
                 <x-responsive-nav-link :href="route('admin.services.index')" :active="request()->routeIs('admin.services.index')">
                     {{ __('Services') }}
                 </x-responsive-nav-link>
+                <x-nav-link :href="route('admin.regions.index')" :active="request()->routeIs('admin.regions.index')">
+                            {{ __('Regions') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.cities.index')" :active="request()->routeIs('admin.cities.index')">
+                            {{ __('Cities') }}
+                        </x-nav-link>
             @endif
         </div>
 

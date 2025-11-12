@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Services Management') }}
@@ -28,6 +28,9 @@
                                         User
                                     </th>
                                     <th scope="col" class="px-6 py-3">
+                                        City
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
                                         Price
                                     </th>
                                     <th scope="col" class="px-6 py-3">
@@ -49,6 +52,9 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         {{ $service->user->name }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {{ $service->city->name }}
                                     </td>
                                     <td class="px-6 py-4">
                                         {{ $service->price }}
@@ -73,4 +79,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

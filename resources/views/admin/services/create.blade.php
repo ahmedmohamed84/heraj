@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Create Service') }}
@@ -55,6 +55,17 @@
                             <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
                         </div>
 
+                        <!-- City -->
+                        <div class="mt-4">
+                            <x-input-label for="city_id" :value="__('City')" />
+                            <select id="city_id" name="city_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                @foreach ($cities as $city)
+                                    <option value="{{ $city->id }}">{{ $city->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('city_id')" class="mt-2" />
+                        </div>
+
                         <!-- Status -->
                         <div class="mt-4">
                             <x-input-label for="status" :value="__('Status')" />
@@ -88,4 +99,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>
