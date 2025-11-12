@@ -34,5 +34,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('regions', RegionController::class);
     Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);
     Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
+    Route::resource('settings', \App\Http\Controllers\Admin\SettingController::class);
     // Route::resource('cities', CityController::class);
 });

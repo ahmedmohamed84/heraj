@@ -37,6 +37,9 @@
                          <x-nav-link :href="route('admin.attributes.index')" :active="request()->routeIs('admin.attributes.index')">
                             {{ __('Attributes') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">
+                            {{ __('Settings') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -115,6 +118,9 @@
                         <x-nav-link :href="route('admin.attributes.index')" :active="request()->routeIs('admin.attributes.index')">
                             {{ __('Attributes') }}
                         </x-nav-link>
+                        <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">
+                            {{ __('Settings') }}
+                        </x-responsive-nav-link>
             @endif
         </div>
 
