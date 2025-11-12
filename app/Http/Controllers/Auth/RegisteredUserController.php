@@ -45,10 +45,10 @@ class RegisteredUserController extends Controller
         if ($registrationField === 'email') {
             $rules['email'] = ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class];
             $userData['email'] = $request->email;
-            $userData['phone_number'] = null;
+            $userData['phone'] = null;
         } else {
-            $rules['phone_number'] = ['required', 'phone:INTERNATIONAL', 'unique:'.User::class];
-            $userData['phone_number'] = $request->phone_number;
+            $rules['phone'] = ['required', 'phone:INTERNATIONAL', 'unique:'.User::class];
+            $userData['phone'] = $request->phone;
             $userData['email'] = null;
         }
 

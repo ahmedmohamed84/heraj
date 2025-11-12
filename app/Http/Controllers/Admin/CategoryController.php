@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-
 use App\Models\Category;
+use App\Models\Attribute; // Import the Attribute model
 
 class CategoryController extends Controller
 {
@@ -15,7 +14,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::with('parent')->paginate(10);
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -24,7 +23,9 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return view('admin.categories.create');
+        $categories = Category::all();
+        $attributes = Attribute::all(); // Get all attributes
+        return view('admin.categories.create', compact('categories', 'attributes'));
     }
 
     /**
@@ -34,13 +35,25 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:categories'],
             'description' => ['nullable', 'string'],
+            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'attributes' => ['nullable', 'array'], // Validate attributes as an array
+            'attributes.*.id' => ['required_with:attributes', 'exists:attributes,id'],
+            'attributes.*.value' => ['nullable', 'string'],
         ]);
 
-        Category::create($request->all());
+        $category = Category::create($request->only(['name', 'description', 'parent_id']));
 
-        return redirect()->route('admin.categories.index');
+        // Sync attributes
+        if ($request->has('attributes')) {
+            $syncData = [];
+            foreach ($request->attributes as $attributeData) {
+                $syncData[$attributeData['id']] = ['value' => $attributeData['value'] ?? null];
+            }
+            $category->attributes()->sync($syncData);
+        }
+
+        return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
     }
 
     /**
@@ -56,7 +69,10 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        return view('admin.categories.edit', compact('category'));
+        $categories = Category::where('id', '!=', $category->id)->get();
+        $attributes = Attribute::all(); // Get all attributes
+        $categoryAttributes = $category->attributes->keyBy('id'); // Get attributes already assigned to this category
+        return view('admin.categories.edit', compact('category', 'categories', 'attributes', 'categoryAttributes'));
     }
 
     /**
@@ -66,13 +82,27 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:categories,slug,' . $category->id],
             'description' => ['nullable', 'string'],
+            'parent_id' => ['nullable', 'integer', 'exists:categories,id', 'not_in:' . $category->id],
+            'attributes' => ['nullable', 'array'], // Validate attributes as an array
+            'attributes.*.id' => ['required_with:attributes', 'exists:attributes,id'],
+            'attributes.*.value' => ['nullable', 'string'],
         ]);
 
-        $category->update($request->all());
+        $category->update($request->only(['name', 'description', 'parent_id']));
 
-        return redirect()->route('admin.categories.index');
+        // Sync attributes
+        if ($request->has('attributes')) {
+            $syncData = [];
+            foreach ($request->attributes as $attributeData) {
+                $syncData[$attributeData['id']] = ['value' => $attributeData['value'] ?? null];
+            }
+            $category->attributes()->sync($syncData);
+        } else {
+            $category->attributes()->detach(); // If no attributes are sent, detach all
+        }
+
+        return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
     }
 
     /**
@@ -82,6 +112,6 @@ class CategoryController extends Controller
     {
         $category->delete();
 
-        return redirect()->route('admin.categories.index');
+        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }
 }

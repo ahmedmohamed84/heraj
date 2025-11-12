@@ -34,6 +34,9 @@
                         <x-nav-link :href="route('admin.cities.index')" :active="request()->routeIs('admin.cities.index')">
                             {{ __('Cities') }}
                         </x-nav-link>
+                         <x-nav-link :href="route('admin.attributes.index')" :active="request()->routeIs('admin.attributes.index')">
+                            {{ __('Attributes') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -108,6 +111,9 @@
                         </x-nav-link>
                         <x-nav-link :href="route('admin.cities.index')" :active="request()->routeIs('admin.cities.index')">
                             {{ __('Cities') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.attributes.index')" :active="request()->routeIs('admin.attributes.index')">
+                            {{ __('Attributes') }}
                         </x-nav-link>
             @endif
         </div>

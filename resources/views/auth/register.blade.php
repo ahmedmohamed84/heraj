@@ -36,9 +36,9 @@
 
                 <!-- Phone Number -->
                 <div id="phone_field" class="mt-4" style="display: none;">
-                    <x-input-label for="phone_number" :value="__('Phone Number')" />
-                    <x-text-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" :value="old('phone_number')" autocomplete="tel" />
-                    <x-input-error :messages="$errors->get('phone_number')" class="mt-2" />
+                    <x-input-label for="phone" :value="__('Phone')" />
+                    <x-text-input id="phone" class="block mt-1 w-full" type="tel" name="phone" :value="old('phone')" autocomplete="tel" />
+                    <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                 </div>
 
 

@@ -1,14 +1,14 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Edit Category') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('admin.categories.update', $category) }}">
                         @csrf
                         @method('PUT')
@@ -20,25 +20,79 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
-                        <!-- Slug -->
-                        <div class="mt-4">
-                            <x-input-label for="slug" :value="__('Slug')" />
-                            <x-text-input id="slug" class="block mt-1 w-full" type="text" name="slug" :value="old('slug', $category->slug)" required />
-                            <x-input-error :messages="$errors->get('slug')" class="mt-2" />
-                        </div>
-
                         <!-- Description -->
                         <div class="mt-4">
                             <x-input-label for="description" :value="__('Description')" />
-                            <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">{{ old('description', $category->description) }}</textarea>
+                            <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description', $category->description) }}</textarea>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
-                        <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('admin.categories.index') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                                {{ __('Back to list') }}
-                            </a>
+                        <!-- Parent Category -->
+                        <div class="mt-4">
+                            <x-input-label for="parent_id" :value="__('Parent Category')" />
+                            <select id="parent_id" name="parent_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="">No Parent</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('parent_id', $category->parent_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('parent_id')" class="mt-2" />
+                        </div>
 
+                        <!-- Attributes Section -->
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900">Category Attributes</h3>
+                            <div id="attributes-container" class="mt-4 space-y-4">
+                                @foreach ($attributes as $attribute)
+                                    @php
+                                        $isChecked = isset($categoryAttributes[$attribute->id]);
+                                        $attributeValue = $isChecked ? $categoryAttributes[$attribute->id]->pivot->value : '';
+                                        if ($attribute->type === 'checkbox' && $attributeValue) {
+                                            $attributeValue = json_decode($attributeValue, true);
+                                        }
+                                    @endphp
+                                    <div class="flex items-center space-x-2">
+                                        <input type="checkbox" name="attributes[{{ $attribute->id }}][id]" value="{{ $attribute->id }}"
+                                               id="attribute_{{ $attribute->id }}"
+                                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                               onchange="toggleAttributeValueField(this, 'attribute_value_{{ $attribute->id }}')"
+                                               {{ $isChecked ? 'checked' : '' }}>
+                                        <x-input-label for="attribute_{{ $attribute->id }}" :value="$attribute->name" />
+
+                                        <div id="attribute_value_{{ $attribute->id }}" style="display: {{ $isChecked ? 'block' : 'none' }};">
+                                            @if ($attribute->type === 'text')
+                                                <x-text-input type="text" name="attributes[{{ $attribute->id }}][value]" class="ml-2" placeholder="Enter value" :value="$attributeValue" />
+                                            @elseif ($attribute->type === 'number')
+                                                <x-text-input type="number" name="attributes[{{ $attribute->id }}][value]" class="ml-2" placeholder="Enter number" :value="$attributeValue" />
+                                            @elseif ($attribute->type === 'select' && $attribute->options)
+                                                <select name="attributes[{{ $attribute->id }}][value]" class="ml-2 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                                    <option value="">Select an option</option>
+                                                    @foreach (json_decode($attribute->options) as $option)
+                                                        <option value="{{ $option }}" {{ $attributeValue == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @elseif ($attribute->type === 'radio' && $attribute->options)
+                                                <div class="ml-2 flex space-x-2">
+                                                    @foreach (json_decode($attribute->options) as $option)
+                                                        <input type="radio" name="attributes[{{ $attribute->id }}][value]" value="{{ $option }}" id="attribute_{{ $attribute->id }}_radio_{{ $loop->index }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ $attributeValue == $option ? 'checked' : '' }}>
+                                                        <label for="attribute_{{ $attribute->id }}_radio_{{ $loop->index }}">{{ $option }}</label>
+                                                    @endforeach
+                                                </div>
+                                            @elseif ($attribute->type === 'checkbox' && $attribute->options)
+                                                <div class="ml-2 flex space-x-2">
+                                                    @foreach (json_decode($attribute->options) as $option)
+                                                        <input type="checkbox" name="attributes[{{ $attribute->id }}][value][]" value="{{ $option }}" id="attribute_{{ $attribute->id }}_checkbox_{{ $loop->index }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" {{ is_array($attributeValue) && in_array($option, $attributeValue) ? 'checked' : '' }}>
+                                                        <label for="attribute_{{ $attribute->id }}_checkbox_{{ $loop->index }}">{{ $option }}</label>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ms-4">
                                 {{ __('Update') }}
                             </x-primary-button>
@@ -48,4 +102,32 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <script>
+        function toggleAttributeValueField(checkbox, valueFieldId) {
+            const valueField = document.getElementById(valueFieldId);
+            if (checkbox.checked) {
+                valueField.style.display = 'block';
+            } else {
+                valueField.style.display = 'none';
+                // Optionally clear the value when unchecked
+                const input = valueField.querySelector('input, select');
+                if (input) {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('#attributes-container input[type="checkbox"]').forEach(checkbox => {
+                const valueFieldId = 'attribute_value_' + checkbox.id.split('_')[1];
+                toggleAttributeValueField(checkbox, valueFieldId);
+            });
+        });
+    </script>
+</x-admin-layout>

@@ -38,7 +38,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'phone_number' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'string', 'in:user,admin'],
         ]);
@@ -46,7 +46,7 @@ class UserController extends Controller
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'phone_number' => $request->phone_number,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
@@ -78,7 +78,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'phone_number' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'string', 'in:user,admin'],
         ]);
@@ -86,7 +86,7 @@ class UserController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'phone_number' => $request->phone_number,
+            'phone' => $request->phone,
             'role' => $request->role,
         ]);
 
