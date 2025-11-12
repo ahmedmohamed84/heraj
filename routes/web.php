@@ -35,5 +35,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);
     Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
     Route::resource('settings', \App\Http\Controllers\Admin\SettingController::class);
+    Route::resource('pages', \App\Http\Controllers\Admin\PageController::class);
+    Route::post('pages/{page}/toggle', [\App\Http\Controllers\Admin\PageController::class, 'toggle'])->name('pages.toggle');
     // Route::resource('cities', CityController::class);
 });
+
+Route::get('/{page:slug}', [\App\Http\Controllers\PageController::class, 'show'])->name('page.show');

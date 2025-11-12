@@ -40,6 +40,9 @@
                         <x-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">
                             {{ __('Settings') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.pages.index')">
+                            {{ __('Pages') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -120,6 +123,9 @@
                         </x-nav-link>
                         <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.index')">
                             {{ __('Settings') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.pages.index')" :active="request()->routeIs('admin.pages.index')">
+                            {{ __('Pages') }}
                         </x-responsive-nav-link>
             @endif
         </div>

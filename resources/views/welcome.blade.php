@@ -185,10 +185,11 @@
                             </ul>
                         </div>
                         <div class="mt-12 md:mt-0">
-                            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">قانوني</h3>
+                            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">صفحاتنا</h3>
                             <ul class="mt-4 space-y-4">
-                                <li><a href="#" class="text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">سياسة الخصوصية</a></li>
-                                <li><a href="#" class="text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">شروط الاستخدام</a></li>
+                                @foreach ($pages as $page)
+                                    <li><a href="{{ route('page.show', $page) }}" class="text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">{{ $page->title }}</a></li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
