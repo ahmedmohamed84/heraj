@@ -54,7 +54,7 @@
                                         {{ $service->user->name }}
                                     </td>
                                     <td class="px-6 py-4">
-                                        {{ $service->city->name }}
+                                        {{ $service->city->name ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4">
                                         {{ $service->price }}
