@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
@@ -16,6 +17,7 @@ class Service extends Model
         'title',
         'description',
         'price',
+        'phone',
         'status',
         'image',
     ];
@@ -33,5 +35,15 @@ class Service extends Model
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ServiceImage::class);
+    }
+
+    public function attributeValues()
+    {
+        return $this->hasMany(ServiceAttributeValue::class);
     }
 }

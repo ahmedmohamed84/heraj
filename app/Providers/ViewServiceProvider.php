@@ -21,7 +21,7 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('welcome', function ($view) {
+        View::composer('layouts.new_app', function ($view) {
             $view->with('pages', Page::where('is_published', true)->get());
         });
     }

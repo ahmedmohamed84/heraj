@@ -44,7 +44,6 @@ class AttributeController extends Controller
 
         Attribute::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
             'type' => $request->type,
             'options' => $options,
         ]);
@@ -86,7 +85,6 @@ class AttributeController extends Controller
 
         $attribute->update([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
             'type' => $request->type,
             'options' => $options,
         ]);

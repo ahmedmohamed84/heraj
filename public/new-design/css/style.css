@@ -1,0 +1,17 @@
+/* Please provide the CSS code here */
+
+  body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .category-item:hover {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+        }
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+            border-color: #2563eb;
+        }

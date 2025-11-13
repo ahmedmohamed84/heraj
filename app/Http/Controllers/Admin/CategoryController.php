@@ -114,4 +114,14 @@ class CategoryController extends Controller
 
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }
+
+    /**
+     * Get attributes for a given category.
+     */
+    public function getAttributes(Category $category)
+    {
+        // Load attributes with their pivot data
+        $attributes = $category->attributes()->withPivot('value')->get();
+        return response()->json(['data' => $attributes]);
+    }
 }

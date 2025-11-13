@@ -34,6 +34,7 @@ class SettingController extends Controller
     public function store(SettingRequest $request): RedirectResponse
     {
         Setting::create($request->validated());
+        clear_settings_cache();
         return redirect()->route('admin.settings.index')->with('success', 'Setting created successfully.');
     }
 
@@ -59,6 +60,7 @@ class SettingController extends Controller
     public function update(SettingRequest $request, Setting $setting): RedirectResponse
     {
         $setting->update($request->validated());
+        clear_settings_cache();
         return redirect()->route('admin.settings.index')->with('success', 'Setting updated successfully.');
     }
 
@@ -68,6 +70,7 @@ class SettingController extends Controller
     public function destroy(Setting $setting): RedirectResponse
     {
         $setting->delete();
+        clear_settings_cache();
         return redirect()->route('admin.settings.index')->with('success', 'Setting deleted successfully.');
     }
 }
