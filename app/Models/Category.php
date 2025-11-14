@@ -44,8 +44,6 @@ class Category extends Model
 
     public function attributes()
     {
-        return $this->belongsToMany(Attribute::class, 'category_attributes')
-                    ->withPivot('value')
-                    ->withTimestamps();
+        return $this->belongsToMany(Attribute::class, 'attribute_category');
     }
 }

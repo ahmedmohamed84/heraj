@@ -60,15 +60,13 @@ class ServiceController extends Controller
         $service = Service::create($validated);
 
         if ($request->has('attributes')) {
-            foreach ($request->attributes as $attributeId => $value) {
-                if($value){
-                    ServiceAttributeValue::create([
-                        'service_id' => $service->id,
-                        'attribute_id' => $attributeId,
-                        'value' => $value,
-                    ]);
+            $attributesToSync = [];
+            foreach ($request->input('attributes', []) as $attributeId => $value) {
+                if ($value) {
+                    $attributesToSync[$attributeId] = ['value' => $value];
                 }
             }
+            $service->attributes()->sync($attributesToSync);
         }
 
         if ($request->hasFile('images')) {
@@ -99,10 +97,10 @@ class ServiceController extends Controller
         $cities = City::all();
 
         // Eager load relationships for efficiency
-        $service->load('attributeValues', 'category.attributes');
+        $service->load('attributes', 'category.attributes');
 
         // Create a key-value map of existing attribute_id => value
-        $serviceAttributeValues = $service->attributeValues->pluck('value', 'attribute_id');
+        $serviceAttributeValues = $service->attributes->pluck('pivot.value', 'id');
 
         return view('admin.services.edit', compact(
             'service',
@@ -144,18 +142,15 @@ class ServiceController extends Controller
         $service->update($validated);
 
         // Sync attributes
-        $service->attributeValues()->delete();
+        $attributesToSync = [];
         if ($request->has('attributes')) {
-            foreach ($request->attributes as $attributeId => $value) {
+            foreach ($request->input('attributes', []) as $attributeId => $value) {
                 if ($value) {
-                    ServiceAttributeValue::create([
-                        'service_id' => $service->id,
-                        'attribute_id' => $attributeId,
-                        'value' => $value,
-                    ]);
+                    $attributesToSync[$attributeId] = ['value' => $value];
                 }
             }
         }
+        $service->attributes()->sync($attributesToSync);
 
         if ($request->hasFile('images')) {
             // Delete old gallery images

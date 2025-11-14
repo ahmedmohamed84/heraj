@@ -30,10 +30,16 @@ class Attribute extends Model
         });
     }
 
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'attribute_service')->withPivot('value');
+    }
+
+    /**
+     * The categories that this attribute can be assigned to.
+     */
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'category_attributes')
-                    ->withPivot('value')
-                    ->withTimestamps();
+        return $this->belongsToMany(Category::class, 'attribute_category');
     }
 }

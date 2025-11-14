@@ -1,11 +1,8 @@
 <?php
 
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\ServiceController;
-use App\Http\Controllers\Admin\RegionController;
-use App\Http\Controllers\Admin\CityController;
-
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,8 +17,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/categories/{category}/attributes', [\App\Http\Controllers\Admin\CategoryController::class, 'getAttributes'])->name('categories.attributes');
+
+    Route::get('/categories/{category}/attributes', [\App\Http\Controllers\CategoryController::class, 'getAttributes'])->name('categories.attributes');
+    Route::resource('services', ServiceController::class);
 });
+
+Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
 require __DIR__.'/auth.php';
 
@@ -29,11 +30,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', function () {
         return view('admin.dashboard');
     })->name('dashboard');
-    Route::resource('users', UserController::class);
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('services', ServiceController::class);
-    Route::delete('services/images/{image}', [ServiceController::class, 'deleteImage'])->name('admin.services.images.delete');
-    Route::resource('regions', RegionController::class);
+    Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);
+    Route::delete('services/images/{image}', [\App\Http\Controllers\Admin\ServiceController::class, 'deleteImage'])->name('services.images.delete');
+    Route::resource('regions', \App\Http\Controllers\Admin\RegionController::class);
     Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);
     Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);
     Route::resource('settings', \App\Http\Controllers\Admin\SettingController::class);

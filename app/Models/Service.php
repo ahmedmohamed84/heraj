@@ -42,8 +42,8 @@ class Service extends Model
         return $this->hasMany(ServiceImage::class);
     }
 
-    public function attributeValues()
+    public function attributes()
     {
-        return $this->hasMany(ServiceAttributeValue::class);
+        return $this->belongsToMany(Attribute::class, 'attribute_service')->withPivot('value');
     }
 }
