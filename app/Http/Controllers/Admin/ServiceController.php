@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Service;
+use App\Models\ServiceAttributeValue;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -41,18 +42,41 @@ class ServiceController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
+            'phone' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
             'city_id' => 'required|exists:cities,id',
             'status' => 'required|in:pending,approved,rejected',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'attributes' => 'nullable|array',
         ]);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('services', 'public');
         }
 
-        Service::create($validated);
+        $service = Service::create($validated);
+
+        if ($request->has('attributes')) {
+            foreach ($request->attributes as $attributeId => $value) {
+                if($value){
+                    ServiceAttributeValue::create([
+                        'service_id' => $service->id,
+                        'attribute_id' => $attributeId,
+                        'value' => $value,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('services/gallery', 'public');
+                $service->images()->create(['path' => $path]);
+            }
+        }
 
         return redirect()->route('admin.services.index')->with('success', 'Service created successfully.');
     }
@@ -73,7 +97,20 @@ class ServiceController extends Controller
         $categories = Category::all();
         $users = User::all();
         $cities = City::all();
-        return view('admin.services.edit', compact('service', 'categories', 'users', 'cities'));
+
+        // Eager load relationships for efficiency
+        $service->load('attributeValues', 'category.attributes');
+
+        // Create a key-value map of existing attribute_id => value
+        $serviceAttributeValues = $service->attributeValues->pluck('value', 'attribute_id');
+
+        return view('admin.services.edit', compact(
+            'service',
+            'categories',
+            'users',
+            'cities',
+            'serviceAttributeValues'
+        ));
     }
 
     /**
@@ -85,11 +122,15 @@ class ServiceController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
+            'phone' => 'nullable|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
             'city_id' => 'required|exists:cities,id',
             'status' => 'required|in:pending,approved,rejected',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'attributes' => 'nullable|array',
         ]);
 
         if ($request->hasFile('image')) {
@@ -102,6 +143,33 @@ class ServiceController extends Controller
 
         $service->update($validated);
 
+        // Sync attributes
+        $service->attributeValues()->delete();
+        if ($request->has('attributes')) {
+            foreach ($request->attributes as $attributeId => $value) {
+                if ($value) {
+                    ServiceAttributeValue::create([
+                        'service_id' => $service->id,
+                        'attribute_id' => $attributeId,
+                        'value' => $value,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->hasFile('images')) {
+            // Delete old gallery images
+            foreach ($service->images as $image) {
+                Storage::disk('public')->delete($image->path);
+                $image->delete();
+            }
+
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('services/gallery', 'public');
+                $service->images()->create(['path' => $path]);
+            }
+        }
+
         return redirect()->route('admin.services.index')->with('success', 'Service updated successfully.');
     }
 
@@ -112,6 +180,9 @@ class ServiceController extends Controller
     {
         if ($service->image) {
             Storage::disk('public')->delete($service->image);
+        }
+        foreach ($service->images as $image) {
+            Storage::disk('public')->delete($image->path);
         }
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Service deleted successfully.');
