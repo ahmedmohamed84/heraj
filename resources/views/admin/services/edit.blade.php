@@ -90,6 +90,39 @@
                             @endif
                         </div>
 
+                         <!-- Gallery Images -->
+                        <div class="mt-4">
+                            <x-input-label for="images" :value="__('Gallery Images')" />
+                            <x-text-input id="images" class="block mt-1 w-full" type="file" name="images[]" multiple />
+                            <x-input-error :messages="$errors->get('images')" class="mt-2" />
+                            
+                            <!-- Display existing gallery images -->
+                            @if ($service->images->count() > 0)
+                                <div class="mt-4">
+                                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ __('Existing Gallery Images') }}</h3>
+                                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                                        @foreach ($service->images as $image)
+                                            <div class="relative group">
+                                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $service->title }}" class="w-20 h-20 object-cover">
+                                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+                                                    <a href="{{ asset('storage/' . $image->path) }}" target="_blank" class="text-white mr-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </a>
+                                                    <button type="button" data-image-id="{{ $image->id }}" class="text-white delete-image-btn">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('admin.services.index') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                 {{ __('Back to list') }}
@@ -104,4 +137,42 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle delete image buttons
+            document.querySelectorAll('.delete-image-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const imageId = this.getAttribute('data-image-id');
+                    const imageContainer = this.closest('.relative');
+                    
+                    if (confirm('Are you sure you want to delete this image?')) {
+                        // Create a form to submit the delete request
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/services/images/${imageId}`;
+                        form.style.display = 'none';
+                        
+                        // Add CSRF token
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        form.appendChild(csrfToken);
+                        
+                        // Add _method input for DELETE request
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                        
+                        // Add the form to the document and submit it
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 </x-admin-layout>

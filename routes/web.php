@@ -32,6 +32,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', UserController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('services', ServiceController::class);
+    Route::delete('services/images/{image}', [ServiceController::class, 'deleteImage'])->name('admin.services.images.delete');
     Route::resource('regions', RegionController::class);
     Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);
     Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class);

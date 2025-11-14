@@ -187,4 +187,20 @@ class ServiceController extends Controller
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Service deleted successfully.');
     }
+
+    /**
+     * Delete an image from the service gallery.
+     */
+    public function deleteImage($imageId)
+    {
+        $image = \App\Models\ServiceImage::findOrFail($imageId);
+        
+        // Delete the file from storage
+        Storage::disk('public')->delete($image->path);
+        
+        // Delete the record from database
+        $image->delete();
+        
+        return back()->with('success', 'Image deleted successfully.');
+    }
 }

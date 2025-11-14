@@ -33,16 +33,26 @@
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
 
+                        <!-- Phone -->
+                        <div class="mt-4">
+                            <x-input-label for="phone" :value="__('Phone')" />
+                            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone')" />
+                            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+                        </div>
+
                         <!-- Category -->
                         <div class="mt-4">
                             <x-input-label for="category_id" :value="__('Category')" />
                             <select id="category_id" name="category_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">{{ __('Select a category') }}</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
                         </div>
+
+                        <div id="attributes-wrapper" class="mt-4"></div>
 
                         <!-- User -->
                         <div class="mt-4">
@@ -84,6 +94,13 @@
                             <x-input-error :messages="$errors->get('image')" class="mt-2" />
                         </div>
 
+                        <!-- Gallery Images -->
+                        <div class="mt-4">
+                            <x-input-label for="images" :value="__('Gallery Images')" />
+                            <x-text-input id="images" class="block mt-1 w-full" type="file" name="images[]" multiple />
+                            <x-input-error :messages="$errors->get('images')" class="mt-2" />
+                        </div>
+
 
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('admin.services.index') }}" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
@@ -99,4 +116,53 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const categorySelect = document.getElementById('category_id');
+            const attributesWrapper = document.getElementById('attributes-wrapper');
+
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    const categoryId = this.value;
+                    attributesWrapper.innerHTML = ''; // Clear previous attributes
+
+                    if (categoryId) {
+                        // Use the named route for better maintainability
+                        const url = '{{ route("categories.attributes", ["category" => ":id"]) }}'.replace(':id', categoryId);
+                        fetch(url)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                console.log('Response:', response);
+                                console.log('Response body:', response.body);
+                                return response.json();
+                            })
+                            .then(attributes => {
+                                if (attributes && attributes.length > 0) {
+                                    const title = document.createElement('h3');
+                                    title.className = 'text-lg font-medium text-gray-900 dark:text-gray-100';
+                                    title.innerText = '{{ __("Service Attributes") }}';
+                                    attributesWrapper.appendChild(title);
+                                }
+                                attributes.forEach(attribute => {
+                                    const attributeEl = document.createElement('div');
+                                    attributeEl.classList.add('mt-4');
+
+                                    // The name is "attributes[ATTRIBUTE_ID]"
+                                    const inputHtml = `
+                                        <label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700 dark:text-gray-300">${attribute.name}</label>
+                                        <input type="text" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                    `;
+
+                                    attributeEl.innerHTML = `<div>${inputHtml}</div>`;
+                                    attributesWrapper.appendChild(attributeEl);
+                                });
+                            })
+                            .catch(error => console.error('Error fetching attributes:', error));
+                    }
+                });
+            }
+        });
+    </script>
 </x-admin-layout>
