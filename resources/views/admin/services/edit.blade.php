@@ -45,12 +45,14 @@
                             <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
                         </div>
 
+                        <div id="attributes-wrapper" class="mt-4"></div>
+
                         <!-- User -->
                         <div class="mt-4">
                             <x-input-label for="user_id" :value="__('User')" />
                             <select id="user_id" name="user_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                                 @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" @selected($service->user_id == $user->id)>{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}" @selected(old('user_id', $service->user_id) == $user->id)>{{ $user->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('user_id')" class="mt-2" />
@@ -61,7 +63,7 @@
                             <x-input-label for="city_id" :value="__('City')" />
                             <select id="city_id" name="city_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                                 @foreach ($cities as $city)
-                                    <option value="{{ $city->id }}" @selected($service->city_id == $city->id)>{{ $city->name }}</option>
+                                    <option value="{{ $city->id }}" @selected(old('city_id', $service->city_id) == $city->id)>{{ $city->name }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('city_id')" class="mt-2" />
@@ -71,9 +73,9 @@
                         <div class="mt-4">
                             <x-input-label for="status" :value="__('Status')" />
                             <select id="status" name="status" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                <option value="pending" @selected($service->status == 'pending')>Pending</option>
-                                <option value="approved" @selected($service->status == 'approved')>Approved</option>
-                                <option value="rejected" @selected($service->status == 'rejected')>Rejected</option>
+                                <option value="pending" @selected(old('status', $service->status) == 'pending')>Pending</option>
+                                <option value="approved" @selected(old('status', $service->status) == 'approved')>Approved</option>
+                                <option value="rejected" @selected(old('status', $service->status) == 'rejected')>Rejected</option>
                             </select>
                             <x-input-error :messages="$errors->get('status')" class="mt-2" />
                         </div>
@@ -138,41 +140,119 @@
         </div>
     </div>
     
+    @php
+    // Prepare the saved attributes for JavaScript
+    // This creates a key-value pair of attribute_id => value
+    $savedAttributes = $service->attributes->pluck('pivot.value', 'id');
+    @endphp
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle delete image buttons
-            document.querySelectorAll('.delete-image-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const imageId = this.getAttribute('data-image-id');
-                    const imageContainer = this.closest('.relative');
-                    
-                    if (confirm('Are you sure you want to delete this image?')) {
-                        // Create a form to submit the delete request
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/admin/services/images/${imageId}`;
-                        form.style.display = 'none';
-                        
-                        // Add CSRF token
-                        const csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        form.appendChild(csrfToken);
-                        
-                        // Add _method input for DELETE request
-                        const methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = '_method';
-                        methodInput.value = 'DELETE';
-                        form.appendChild(methodInput);
-                        
-                        // Add the form to the document and submit it
-                        document.body.appendChild(form);
-                        form.submit();
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('category_id');
+        const attributesWrapper = document.getElementById('attributes-wrapper');
+        // Decode the saved attributes from PHP to a JavaScript object
+        const savedAttributes = @json($savedAttributes);
+
+        function fetchAndRenderAttributes(categoryId, prefillValues) {
+            attributesWrapper.innerHTML = ''; // Clear previous attributes
+            if (!categoryId) return;
+
+            const url = '{{ route("categories.attributes", ["category" => ":id"]) }}'.replace(':id', categoryId);
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(attributes => {
+                    if (attributes && attributes.length > 0) {
+                        const title = document.createElement('h3');
+                        title.className = 'text-lg font-medium text-gray-900 dark:text-gray-100';
+                        title.innerText = '{{ __("Service Attributes") }}';
+                        attributesWrapper.appendChild(title);
                     }
-                });
+
+                    attributes.forEach(attribute => {
+                        const attributeEl = document.createElement('div');
+                        attributeEl.classList.add('mt-4');
+                        const savedValue = prefillValues ? (savedAttributes[attribute.id] || null) : null;
+
+                        let inputHtml = `<label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700 dark:text-gray-300">${attribute.name}</label>`;
+
+                        switch (attribute.type) {
+                            case 'number':
+                                const numValue = savedValue !== null ? `value="${savedValue}"` : '';
+                                inputHtml += `<input type="number" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" ${numValue} class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                break;
+
+                            case 'radio':
+                                if (attribute.options && Array.isArray(attribute.options)) {
+                                    inputHtml += '<div class="mt-2 space-y-2">';
+                                    attribute.options.forEach((option, index) => {
+                                        const optionId = `attribute_${attribute.id}_${index}`;
+                                        const isChecked = savedValue !== null && savedValue == option;
+                                        const checkedAttr = isChecked ? 'checked' : '';
+                                        inputHtml += `
+                                            <div class="flex items-center">
+                                                <input type="radio" id="${optionId}" name="attributes[${attribute.id}]" value="${option}" ${checkedAttr} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                                <label for="${optionId}" class="ms-3 block text-sm font-medium text-gray-700 dark:text-gray-300">${option}</label>
+                                            </div>
+                                        `;
+                                    });
+                                    inputHtml += '</div>';
+                                }
+                                break;
+
+                            default: // 'text' or any other type
+                                const textValue = savedValue !== null ? `value="${savedValue}"` : '';
+                                inputHtml += `<input type="text" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" ${textValue} class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                break;
+                        }
+                        attributeEl.innerHTML = `<div>${inputHtml}</div>`;
+                        attributesWrapper.appendChild(attributeEl);
+                    });
+                })
+                .catch(error => console.error('Error fetching attributes:', error));
+        }
+
+        // Load initial attributes for the current category on page load
+        if (categorySelect.value) {
+            fetchAndRenderAttributes(categorySelect.value, true);
+        }
+
+        // Add event listener for category change
+        categorySelect.addEventListener('change', function() {
+            // When category changes, don't prefill values
+            fetchAndRenderAttributes(this.value, false);
+        });
+
+        // --- Preserve existing image deletion logic ---
+        document.querySelectorAll('.delete-image-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const imageId = this.getAttribute('data-image-id');
+                if (confirm('Are you sure you want to delete this image?')) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    // The route name should be admin.services.images.delete
+                    form.action = '{{ route("admin.services.images.delete", ["image" => ":id"]) }}'.replace(':id', imageId);
+                    form.style.display = 'none';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'DELETE';
+                    form.appendChild(methodInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             });
         });
+    });
     </script>
 </x-admin-layout>

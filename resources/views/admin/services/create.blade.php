@@ -127,15 +127,12 @@
                     attributesWrapper.innerHTML = ''; // Clear previous attributes
 
                     if (categoryId) {
-                        // Use the named route for better maintainability
                         const url = '{{ route("categories.attributes", ["category" => ":id"]) }}'.replace(':id', categoryId);
                         fetch(url)
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error('Network response was not ok');
                                 }
-                                console.log('Response:', response);
-                                console.log('Response body:', response.body);
                                 return response.json();
                             })
                             .then(attributes => {
@@ -149,11 +146,33 @@
                                     const attributeEl = document.createElement('div');
                                     attributeEl.classList.add('mt-4');
 
-                                    // The name is "attributes[ATTRIBUTE_ID]"
-                                    const inputHtml = `
-                                        <label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700 dark:text-gray-300">${attribute.name}</label>
-                                        <input type="text" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                    `;
+                                    let inputHtml = `<label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700 dark:text-gray-300">${attribute.name}</label>`;
+
+                                    switch (attribute.type) {
+                                        case 'number':
+                                            inputHtml += `<input type="number" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                            break;
+
+                                        case 'radio':
+                                            if (attribute.options && Array.isArray(attribute.options)) {
+                                                inputHtml += '<div class="mt-2 space-y-2">';
+                                                attribute.options.forEach((option, index) => {
+                                                    const optionId = `attribute_${attribute.id}_${index}`;
+                                                    inputHtml += `
+                                                        <div class="flex items-center">
+                                                            <input type="radio" id="${optionId}" name="attributes[${attribute.id}]" value="${option}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                                            <label for="${optionId}" class="ms-3 block text-sm font-medium text-gray-700 dark:text-gray-300">${option}</label>
+                                                        </div>
+                                                    `;
+                                                });
+                                                inputHtml += '</div>';
+                                            }
+                                            break;
+
+                                        default: // 'text' or any other type
+                                            inputHtml += `<input type="text" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                            break;
+                                    }
 
                                     attributeEl.innerHTML = `<div>${inputHtml}</div>`;
                                     attributesWrapper.appendChild(attributeEl);
