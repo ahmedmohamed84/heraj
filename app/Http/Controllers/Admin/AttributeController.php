@@ -34,19 +34,21 @@ class AttributeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|in:text,number,select,radio,checkbox',
-            'options' => 'nullable|string', // JSON string for select/radio/checkbox
+            'options' => 'nullable|array',
         ]);
 
-        $options = null;
-        if (in_array($request->type, ['select', 'radio', 'checkbox']) && $request->options) {
-            $options = json_encode(array_map('trim', explode(',', $request->options)));
-        }
-
-        Attribute::create([
+        $attribute = Attribute::create([
             'name' => $request->name,
             'type' => $request->type,
-            'options' => $options,
         ]);
+
+        if ($request->has('options')) {
+            foreach ($request->options as $option) {
+                if($option) {
+                    $attribute->options()->create(['value' => $option]);
+                }
+            }
+        }
 
         return redirect()->route('admin.attributes.index')->with('success', 'Attribute created successfully.');
     }
@@ -75,19 +77,23 @@ class AttributeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|in:text,number,select,radio,checkbox',
-            'options' => 'nullable|string',
+            'options' => 'nullable|array',
         ]);
-
-        $options = null;
-        if (in_array($request->type, ['select', 'radio', 'checkbox']) && $request->options) {
-            $options = json_encode(array_map('trim', explode(',', $request->options)));
-        }
 
         $attribute->update([
             'name' => $request->name,
             'type' => $request->type,
-            'options' => $options,
         ]);
+
+        $attribute->options()->delete();
+
+        if ($request->has('options')) {
+            foreach ($request->options as $option) {
+                if($option) {
+                    $attribute->options()->create(['value' => $option]);
+                }
+            }
+        }
 
         return redirect()->route('admin.attributes.index')->with('success', 'Attribute updated successfully.');
     }

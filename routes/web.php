@@ -22,7 +22,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('services', ServiceController::class);
 });
 
-Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
 require __DIR__.'/auth.php';
 
@@ -43,4 +42,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Route::resource('cities', CityController::class);
 });
 
-Route::get('/{page:slug}', [\App\Http\Controllers\PageController::class, 'show'])->name('page.show');
+Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
+

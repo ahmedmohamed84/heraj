@@ -78,12 +78,35 @@
                         
                         let html = '<h3 class="text-lg font-medium text-gray-900 mb-2">Category Attributes</h3>';
                         attributes.forEach(attribute => {
-                            html += `
-                                <div class="mb-3">
-                                    <label for="attribute_${attribute.id}" class="block text-sm font-medium text-gray-700">${attribute.name}</label>
-                                    <input type="text" name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                </div>
-                            `;
+                            html += `<div class="mb-3"><label for="attribute_${attribute.id}" class="block text-sm font-medium text-gray-700">${attribute.name}</label>`;
+                            
+                            switch (attribute.type) {
+                                case 'text':
+                                    html += `<input type="text" name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
+                                    break;
+                                case 'number':
+                                    html += `<input type="number" name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
+                                    break;
+                                case 'select':
+                                    html += `<select name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
+                                    attribute.options.forEach(option => {
+                                        html += `<option value="${option.value}">${option.value}</option>`;
+                                    });
+                                    html += `</select>`;
+                                    break;
+                                case 'radio':
+                                    attribute.options.forEach(option => {
+                                        html += `<div class="flex items-center"><input type="radio" name="attributes[${attribute.id}]" value="${option.value}" class="mr-2"><label>${option.value}</label></div>`;
+                                    });
+                                    break;
+                                case 'checkbox':
+                                    attribute.options.forEach(option => {
+                                        html += `<div class="flex items-center"><input type="checkbox" name="attributes[${attribute.id}][]" value="${option.value}" class="mr-2"><label>${option.value}</label></div>`;
+                                    });
+                                    break;
+                            }
+
+                            html += `</div>`;
                         });
                         attributesContainer.innerHTML = html;
                     })

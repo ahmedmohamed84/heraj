@@ -148,9 +148,22 @@
 
                                     let inputHtml = `<label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700 dark:text-gray-300">${attribute.name}</label>`;
 
-                                    switch (attribute.type) {
+                                    const type = attribute.type ? attribute.type.toLowerCase() : 'text';
+
+                                    switch (type) {
                                         case 'number':
                                             inputHtml += `<input type="number" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                            break;
+
+                                        case 'select':
+                                            if (attribute.options && Array.isArray(attribute.options)) {
+                                                inputHtml += `<select id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
+                                                inputHtml += `<option value="">{{ __('Select an option') }}</option>`;
+                                                attribute.options.forEach(option => {
+                                                    inputHtml += `<option value="${option.value}">${option.value}</option>`;
+                                                });
+                                                inputHtml += `</select>`;
+                                            }
                                             break;
 
                                         case 'radio':
@@ -160,8 +173,8 @@
                                                     const optionId = `attribute_${attribute.id}_${index}`;
                                                     inputHtml += `
                                                         <div class="flex items-center">
-                                                            <input type="radio" id="${optionId}" name="attributes[${attribute.id}]" value="${option}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
-                                                            <label for="${optionId}" class="ms-3 block text-sm font-medium text-gray-700 dark:text-gray-300">${option}</label>
+                                                            <input type="radio" id="${optionId}" name="attributes[${attribute.id}]" value="${option.value}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                                            <label for="${optionId}" class="ms-3 block text-sm font-medium text-gray-700 dark:text-gray-300">${option.value}</label>
                                                         </div>
                                                     `;
                                                 });
@@ -169,12 +182,13 @@
                                             }
                                             break;
 
+                                        case 'text':
                                         default: // 'text' or any other type
                                             inputHtml += `<input type="text" id="attribute_${attribute.id}" name="attributes[${attribute.id}]" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">`;
                                             break;
                                     }
 
-                                    attributeEl.innerHTML = `<div>${inputHtml}</div>`;
+                                    attributeEl.innerHTML = inputHtml;
                                     attributesWrapper.appendChild(attributeEl);
                                 });
                             })

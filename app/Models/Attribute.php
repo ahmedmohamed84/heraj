@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\AttributeOption;
 
 class Attribute extends Model
 {
@@ -14,11 +15,6 @@ class Attribute extends Model
         'name',
         'slug',
         'type',
-        'options',
-    ];
-
-    protected $casts = [
-        'options' => 'array',
     ];
 
     protected static function boot()
@@ -41,5 +37,10 @@ class Attribute extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'attribute_category');
+    }
+
+    public function options()
+    {
+        return $this->hasMany(AttributeOption::class);
     }
 }

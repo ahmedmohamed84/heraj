@@ -46,4 +46,26 @@ class Category extends Model
     {
         return $this->belongsToMany(Attribute::class, 'attribute_category');
     }
+
+    /**
+     * Get all attributes for the category, including inherited attributes from parent categories.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getInheritedAttributes()
+    {
+        $parent = $this;
+        $categoryIds = [];
+
+        // Traverse up the category tree to collect all ancestor IDs
+        while ($parent) {
+            $categoryIds[] = $parent->id;
+            $parent = $parent->parent;
+        }
+
+        // Fetch all unique attributes associated with the collected category IDs
+        return Attribute::with('options')->whereHas('categories', function ($query) use ($categoryIds) {
+            $query->whereIn('categories.id', $categoryIds);
+        })->get();
+    }
 }

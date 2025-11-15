@@ -34,11 +34,24 @@
                         </div>
 
                         <!-- Options (for select, radio, checkbox) -->
-                        <div class="mt-4" id="options-field" style="display: none;">
-                            <x-input-label for="options" :value="__('Options (comma-separated)')" />
-                            <x-text-input id="options" class="block mt-1 w-full" type="text" name="options" :value="old('options', $attribute->options ? implode(', ', json_decode($attribute->options)) : '')" />
+                        <div class="mt-4" id="options-container" style="display: none;">
+                            <x-input-label :value="__('Options')" />
+                            <div id="options-wrapper" class="mt-2">
+                                @if($attribute->options)
+                                    @foreach ($attribute->options as $index => $option)
+                                        <div class="flex items-center mt-2" id="option-row-{{ $index }}">
+                                            <x-text-input class="block w-full" type="text" name="options[]" value="{{ $option->value }}" />
+                                            <x-danger-button type="button" class="ms-2 remove-option-button" data-index="{{ $index }}">
+                                                {{ __('Remove') }}
+                                            </x-danger-button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <x-secondary-button type="button" id="add-option-button" class="mt-2">
+                                {{ __('Add Option') }}
+                            </x-secondary-button>
                             <x-input-error :messages="$errors->get('options')" class="mt-2" />
-                            <p class="text-sm text-gray-500 mt-1">Enter options separated by commas (e.g., Option1, Option2, Option3)</p>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
@@ -55,14 +68,44 @@
     <script>
         function toggleOptionsField() {
             const type = document.getElementById('type').value;
-            const optionsField = document.getElementById('options-field');
+            const optionsContainer = document.getElementById('options-container');
             if (type === 'select' || type === 'radio' || type === 'checkbox') {
-                optionsField.style.display = 'block';
+                optionsContainer.style.display = 'block';
             } else {
-                optionsField.style.display = 'none';
+                optionsContainer.style.display = 'none';
             }
         }
-        // Call on page load to set initial state
-        document.addEventListener('DOMContentLoaded', toggleOptionsField);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleOptionsField(); // Set initial state
+
+            const addOptionButton = document.getElementById('add-option-button');
+            const optionsWrapper = document.getElementById('options-wrapper');
+            let optionIndex = {{ $attribute->options->count() }};
+
+            addOptionButton.addEventListener('click', function() {
+                const optionInput = `
+                    <div class="flex items-center mt-2" id="option-row-${optionIndex}">
+                        <x-text-input class="block w-full" type="text" name="options[]" />
+                        <x-danger-button type="button" class="ms-2 remove-option-button" data-index="${optionIndex}">
+                            {{ __('Remove') }}
+                        </x-danger-button>
+                    </div>
+                `;
+                optionsWrapper.insertAdjacentHTML('beforeend', optionInput);
+                optionIndex++;
+            });
+
+            optionsWrapper.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-option-button') || e.target.closest('.remove-option-button')) {
+                    const button = e.target.closest('.remove-option-button');
+                    const indexToRemove = button.getAttribute('data-index');
+                    const rowToRemove = document.getElementById(`option-row-${indexToRemove}`);
+                    if (rowToRemove) {
+                        rowToRemove.remove();
+                    }
+                }
+            });
+        });
     </script>
 </x-admin-layout>

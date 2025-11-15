@@ -15,10 +15,6 @@ class CategoryController extends Controller
      */
     public function getAttributes(Category $category)
     {
-        // Eager load the attributes relationship
-        $category->load('attributes');
-        
-        // Return the attributes as a JSON response
-        return response()->json($category->attributes);
+        return response()->json($category->getInheritedAttributes());
     }
 }
