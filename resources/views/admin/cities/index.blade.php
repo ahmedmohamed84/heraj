@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('إدارة المدن') }}
+            {{ __('Cities Management') }}
         </h2>
     </x-slot>
 
@@ -11,8 +11,8 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">قائمة المدن</h3>
-                        <a href="{{ route('admin.cities.create') }}" class="px-4 py-2 bg-green-500 text-black rounded-md hover:bg-green-600">إضافة مدينة جديدة</a>
+                        <h3 class="text-lg font-semibold">{{ __('Cities List') }}</h3>
+                        <a href="{{ route('admin.cities.create') }}" class="px-4 py-2 bg-green-500 text-black rounded-md hover:bg-green-600">{{ __('Add New City') }}</a>
                     </div>
 
                     @if (session('success'))

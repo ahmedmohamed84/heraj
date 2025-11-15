@@ -47,5 +47,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 
 
-Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
+Route::get('/debug-translations/{locale}', function ($locale) {
+    return response()->json(app('translator')->getLoader()->load($locale, '*', '*'));
+});
+
+Route::get('language/{locale}', function ($locale) {
+    app()->setLocale($locale);
+    session()->put('locale', $locale);
+    return redirect()->back();
+})->name('language.switch');
+// Route:get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
