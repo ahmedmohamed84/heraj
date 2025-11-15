@@ -39,8 +39,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('settings', \App\Http\Controllers\Admin\SettingController::class);
     Route::resource('pages', \App\Http\Controllers\Admin\PageController::class);
     Route::post('pages/{page}/toggle', [\App\Http\Controllers\Admin\PageController::class, 'toggle'])->name('pages.toggle');
-    // Route::resource('cities', CityController::class);
+    Route::resource('languages', \App\Http\Controllers\Admin\LanguageController::class);
+        Route::get('translations', [\App\Http\Controllers\Admin\TranslationController::class, 'index'])->name('translations.index');
+    Route::post('translations', [\App\Http\Controllers\Admin\TranslationController::class, 'store'])->name('translations.store');
+    Route::post('translations/update', [\App\Http\Controllers\Admin\TranslationController::class, 'update'])->name('translations.update');
 });
+
+
 
 Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
