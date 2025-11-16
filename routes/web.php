@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('lang/{code}', [LanguageController::class, 'switch'])->name('lang.switch');
 
 Route::get('/', function () {
     return view('welcome');
@@ -51,10 +54,7 @@ Route::get('/debug-translations/{locale}', function ($locale) {
     return response()->json(app('translator')->getLoader()->load($locale, '*', '*'));
 });
 
-Route::get('language/{locale}', function ($locale) {
-    app()->setLocale($locale);
-    session()->put('locale', $locale);
-    return redirect()->back();
-})->name('language.switch');
 // Route:get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
+
+Route::get('lang/{code}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');

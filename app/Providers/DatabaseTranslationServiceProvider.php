@@ -23,29 +23,29 @@ class DatabaseTranslationServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (Schema::hasTable('languages') && Schema::hasTable('translations')) {
-            try {
-                $activeLanguages = Cache::rememberForever('active_languages_for_translator', function () {
-                    return Language::where('is_active', true)->pluck('code')->all();
+        // Prevent errors during migrations
+        if (!Schema::hasTable('translations')) {
+            return;
+        }
+
+        try {
+            // Use a single cache key for all translations
+            $translations = Cache::rememberForever('db_translations', function () {
+                $groupedTranslations = [];
+                // Fetch all translations and group them by locale
+                Translation::all()->each(function ($translation) use (&$groupedTranslations) {
+                    $key = $translation->group ? $translation->group . '.' . $translation->key : $translation->key;
+                    $groupedTranslations[$translation->locale][$key] = $translation->value;
                 });
+                return $groupedTranslations;
+            });
 
-                foreach ($activeLanguages as $locale) {
-                    $translations = Cache::rememberForever('translations_' . $locale, function () use ($locale) {
-                        $lines = [];
-                        $dbTranslations = Translation::where('locale', $locale)->get();
-                        foreach ($dbTranslations as $translation) {
-                            $key = $translation->group ? $translation->group . '.' . $translation->key : $translation->key;
-                            $lines[$key] = $translation->value;
-                        }
-                        return $lines;
-                    });
-
-                    app('translator')->addLines($translations, $locale);
-                }
-            } catch (\Exception $e) {
-                // This can happen when migrations are not run yet.
-                // You can log the error if you want.
+            // Load the translations into the application
+            foreach ($translations as $locale => $lines) {
+                app('translator')->addLines($lines, $locale);
             }
+        } catch (\Exception $e) {
+            // Log the error if needed, but prevent the application from crashing
         }
     }
 }

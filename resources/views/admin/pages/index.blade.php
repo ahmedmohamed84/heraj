@@ -12,27 +12,27 @@
                     <div class="flex justify-between mb-4">
                         <form action="{{ route('admin.pages.index') }}" method="GET">
                             <input type="text" name="search" placeholder="Search..." value="{{ request('search') }}">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Search</button>
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ __('Search') }}</button>
                         </form>
-                        <a href="{{ route('admin.pages.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Page</a>
+                        <a href="{{ route('admin.pages.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ __('Create Page') }}</a>
                     </div>
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Title
+                                    {{ __('Title') }}
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Slug
+                                    {{ __('Slug') }}
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Published
+                                    {{ __('Published') }}
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Published At
+                                    {{ __('Published At') }}
                                 </th>
                                 <th scope="col" class="relative px-6 py-3">
-                                    <span class="sr-only">Edit</span>
+                                    <span class="sr-only">{{ __('Edit') }}</span>
                                 </th>
                             </tr>
                         </thead>
@@ -52,11 +52,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if ($page->is_published)
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Published
+                                                {{ __('Published') }}
                                             </span>
                                         @else
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                Unpublished
+                                                {{ __('Unpublished') }}
                                             </span>
                                         @endif
                                     </td>
@@ -64,11 +64,11 @@
                                         {{ $page->published_at ? $page->published_at->format('d/m/Y H:i') : 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('admin.pages.edit', $page) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <a href="{{ route('admin.pages.edit', $page) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Edit') }}</a>
                                         <form action="{{ route('admin.pages.destroy', $page) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">{{ __('Delete') }}</button>
                                         </form>
                                         <form action="{{ route('admin.pages.toggle', $page) }}" method="POST" class="inline">
                                             @csrf

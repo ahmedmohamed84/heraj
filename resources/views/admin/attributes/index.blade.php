@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-end mb-4">
                         <a href="{{ route('admin.attributes.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            اضف سمه او خاصية جديدة
+                           {{ __('Add New Attribute') }}
                         </a>
                     </div>
 
@@ -20,16 +20,16 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        الاسم
+                                        {{ __('Name') }}
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        النوع
+                                        {{ __('Type') }}
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Options
+                                        {{ __('Options') }}
                                     </th>
                                     <th scope="col" class="relative px-6 py-3">
-                                        <span class="sr-only">Actions</span>
+                                        <span class="sr-only">{{ __('Actions') }}</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -46,11 +46,11 @@
                                             {{ $attribute->options ? implode(', ', json_decode($attribute->options)) : '-' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('admin.attributes.edit', $attribute->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                            <a href="{{ route('admin.attributes.edit', $attribute->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">{{ __('Edit') }}</a>
                                             <form action="{{ route('admin.attributes.destroy', $attribute->id) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this attribute?')">Delete</button>
+                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm({{ __('Are you sure you want to delete this attribute?') }}ou want to delete this attribute?}')">{{__('Delete')}}</button>
                                             </form>
                                         </td>
                                     </tr>

@@ -12,21 +12,21 @@
                     <form action="{{ route('admin.pages.store') }}" method="POST">
                         @csrf
                         <div class="mb-4">
-                            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">Title</label>
+                            <label for="title" class="block text-gray-700 text-sm font-bold mb-2">{{ __('Title') }}</label>
                             <input type="text" name="title" id="title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                         </div>
                         <div class="mb-4">
-                            <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Content</label>
+                            <label for="content" class="block text-gray-700 text-sm font-bold mb-2">{{ __('Content') }}</label>
                             <textarea name="content" id="content" rows="10" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
                         </div>
                         <div class="mb-4">
                             <label for="is_published" class="inline-flex items-center">
                                 <input type="checkbox" name="is_published" id="is_published" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <span class="ml-2 text-sm text-gray-600">Published</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('Published') }}</span>
                             </label>
                         </div>
                         <div>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create</button>
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">{{ __('Create') }}</button>
                         </div>
                     </form>
                 </div>

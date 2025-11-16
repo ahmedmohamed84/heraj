@@ -26,10 +26,10 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">#</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">الاسم</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">تاريخ الإنشاء</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Name') }}</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ __('Created Date') }}</th>
                                     <th scope="col" class="relative px-6 py-3">
-                                        <span class="sr-only">تعديل</span>
+                                        <span class="sr-only">{{ __('Edit') }}</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -40,17 +40,17 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $region->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $region->created_at->format('Y-m-d') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('admin.regions.edit', $region) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900">تعديل</a>
+                                            <a href="{{ route('admin.regions.edit', $region) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900">{{ __('Edit') }}</a>
                                             <form action="{{ route('admin.regions.destroy', $region) }}" method="POST" class="inline-block mr-2" onsubmit="return confirm('هل أنت متأكد من رغبتك في حذف هذه المنطقة؟ سيتم حذف جميع المدن المرتبطة بها.');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900">حذف</button>
+                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900">{{ __('Delete') }}</button>
                                             </form>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center">لا توجد مناطق لعرضها.</td>
+                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center">{{ __('There is Nothing to show') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

@@ -24,12 +24,14 @@ class Translation extends Model
      */
     protected static function booted()
     {
+        // After a translation is saved or deleted, we clear the entire
+        // database translations cache.
         static::saved(function ($translation) {
-            Cache::forget('translations_' . $translation->locale);
+            Cache::forget('db_translations');
         });
 
         static::deleted(function ($translation) {
-            Cache::forget('translations_' . $translation->locale);
+            Cache::forget('db_translations');
         });
     }
 }
