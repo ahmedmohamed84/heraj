@@ -55,6 +55,18 @@ Route::get('/debug-translations/{locale}', function ($locale) {
 });
 
 // Route:get('/{slug}', [PageController::class, 'show'])->name('page.show');
+Route::get('/debug-trans', function () {
+    // 1. نجبر النظام على استخدام الإنجليزية للتجربة
+    app()->setLocale('en');
 
+    // 2. نستخدم المفتاح الكامل (اسم الجروب + النقطة + الكلمة)
+    // تذكر: نحن وضعنا الكلمات العامة تحت "general"
+    $key = 'general.Actions'; 
 
+    dd([
+        'Current Locale' => app()->getLocale(),
+        'Database Translation' => __($key), // هل ستظهر الكلمة؟
+        'Is Loaded?' => app('translator')->has($key), // هل يراها الآن؟
+    ]);
+});
 Route::get('lang/{code}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('language.switch');

@@ -16,10 +16,11 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // dd(session()->get('locale'));
         if (session()->has('locale')) {
-            App::setLocale(session()->get('locale'));
-        }
-
+            App::setLocale(session()->get('locale'));    
+            }
+    // dd(App::getLocale());
         return $next($request);
     }
 }

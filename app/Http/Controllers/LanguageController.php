@@ -23,7 +23,7 @@ class LanguageController extends Controller
         if ($language) {
             Session::put('locale', $code);
         }
-
+        // dd(session()->get('locale'), $code); // يجب أن يطبع الرمز الجديد (مثلاً ar)
         // Redirect back to the previous page
         return redirect()->back();
     }
