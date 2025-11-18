@@ -12,10 +12,16 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="url('/')" :active="request()->routeIs('home')">
+    {{ __('Home') }}
+</x-nav-link>
+                    @auth
+                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @auth
+                        <x-nav-link :href="route('conversations.index')" :active="request()->routeIs('conversations.index') || request()->routeIs('conversations.show')">
+                            {{ __('Messages') }}
+                        </x-nav-link>
                         @if(Auth::user()->role == 'admin')
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                                 {{ __('Admin Dashboard') }}
@@ -142,6 +148,9 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             @auth
+                <x-responsive-nav-link :href="route('conversations.index')" :active="request()->routeIs('conversations.index') || request()->routeIs('conversations.show')">
+                    {{ __('Messages') }}
+                </x-responsive-nav-link>
                 @if(Auth::user()->role == 'admin')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                         {{ __('Admin Dashboard') }}

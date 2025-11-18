@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
+use App\Models\Language;
 use Illuminate\Support\Str;
 
 class PageController extends Controller
@@ -14,10 +15,13 @@ class PageController extends Controller
      */
     public function index(Request $request)
     {
-        $pages = Page::latest();
+        // This now needs to join translations to be searchable
+        $pages = Page::with('translation')->latest();
 
         if ($request->has('search')) {
-            $pages->where('title', 'like', '%' . $request->search . '%');
+            $pages->whereHas('translations', function ($query) use ($request) {
+                $query->where('title', 'like', '%' . $request->search . '%');
+            });
         }
 
         $pages = $pages->paginate(10);
@@ -30,7 +34,8 @@ class PageController extends Controller
      */
     public function create()
     {
-        return view('admin.pages.create');
+        $languages = Language::all();
+        return view('admin.pages.create', compact('languages'));
     }
 
     /**
@@ -38,27 +43,57 @@ class PageController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required',
-            'content' => 'required',
+        $languages = Language::all();
+        $rules = [
             'is_published' => 'nullable|boolean',
-        ]);
+        ];
 
-        $slug = Str::slug($request->title);
-        $count = Page::where('slug', 'LIKE', "{$slug}%")->count();
-        if ($count > 0) {
-            $slug = $slug . '-' . ($count + 1);
+        $translationData = [];
+        $hasAtLeastOneTranslation = false;
+
+        // First pass: check for input and build rules
+        foreach ($languages as $language) {
+            $locale = $language->code;
+            if ($request->has($locale) && (
+                $request->input($locale.'.title') ||
+                $request->input($locale.'.slug') ||
+                $request->input($locale.'.content')
+            )) {
+                $hasAtLeastOneTranslation = true;
+                $rules[$locale . '.title'] = 'required|string|max:255';
+                // Unique slug per locale
+                $rules[$locale . '.slug'] = 'required|string|max:255|unique:page_translations,slug,NULL,id,locale,' . $locale;
+                $rules[$locale . '.content'] = 'required|string';
+                
+                $translationData[$locale] = $request->input($locale);
+            }
         }
 
-        Page::create([
-            'title' => $request->title,
-            'slug' => $slug,
-            'content' => $request->content,
+        // If no language has any data, return with an error
+        if (!$hasAtLeastOneTranslation) {
+            return redirect()->back()
+                ->withErrors(['general_error' => __('You must fill in the details for at least one language.')])
+                ->withInput();
+        }
+        
+        $request->validate($rules);
+
+        $page = Page::create([
             'is_published' => $request->has('is_published'),
             'published_at' => $request->has('is_published') ? now() : null,
         ]);
 
-        return redirect()->route('admin.pages.index')->with('success', 'Page created successfully.');
+        // Second pass: create translations from validated data
+        foreach ($translationData as $locale => $data) {
+            $page->translations()->create([
+                'locale' => $locale,
+                'title' => $data['title'],
+                'slug' => Str::slug($data['slug']),
+                'content' => $data['content'],
+            ]);
+        }
+
+        return redirect()->route('admin.pages.index')->with('success', __('Page created successfully.'));
     }
 
     /**
@@ -66,7 +101,10 @@ class PageController extends Controller
      */
     public function edit(Page $page)
     {
-        return view('admin.pages.edit', compact('page'));
+        $languages = Language::all();
+        // Eager load translations to avoid N+1 problem in the view
+        $page->load('translations'); 
+        return view('admin.pages.edit', compact('page', 'languages'));
     }
 
     /**
@@ -74,27 +112,30 @@ class PageController extends Controller
      */
     public function update(Request $request, Page $page)
     {
+        // You might want to add more robust validation here
         $request->validate([
-            'title' => 'required',
-            'content' => 'required',
             'is_published' => 'nullable|boolean',
         ]);
 
-        $slug = Str::slug($request->title);
-        if ($page->slug != $slug) {
-            $count = Page::where('slug', 'LIKE', "{$slug}%")->count();
-            if ($count > 0) {
-                $slug = $slug . '-' . ($count + 1);
+        $page->update([
+            'is_published' => $request->has('is_published'),
+            'published_at' => $request->has('is_published') && !$page->is_published ? now() : $page->published_at,
+        ]);
+
+        // Loop through the submitted language data
+        foreach ($request->except(['_token', '_method', 'is_published']) as $locale => $data) {
+            // Ensure all required fields for a translation are present
+            if (isset($data['title']) && isset($data['slug']) && isset($data['content'])) {
+                $page->translations()->updateOrCreate(
+                    ['locale' => $locale], // Match by locale
+                    [
+                        'title'   => $data['title'],
+                        'slug'    => Str::slug($data['slug']), // Ensure slug is URL-friendly
+                        'content' => $data['content'],
+                    ]
+                );
             }
         }
-
-        $page->update([
-            'title' => $request->title,
-            'slug' => $slug,
-            'content' => $request->content,
-            'is_published' => $request->has('is_published'),
-            'published_at' => $request->has('is_published') ? now() : null,
-        ]);
 
         return redirect()->route('admin.pages.index')->with('success', 'Page updated successfully.');
     }

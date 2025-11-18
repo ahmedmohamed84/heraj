@@ -57,7 +57,7 @@
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{{ $service->title }}</h3>
                                 <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ $service->category->name }}</p>
                                 <div class="mt-4 flex items-center justify-between">
-                                    <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($service->price) }} {{ __('SAR') }}</p>
+                                    <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($service->price) }} {{ __('EGP') }}</p>
                                     <div class="text-sm text-gray-500">
                                         <span>{{ $service->city->name ?? '' }}</span>
                                         <span class="mx-1">&middot;</span>

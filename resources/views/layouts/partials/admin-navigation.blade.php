@@ -13,8 +13,11 @@
 
         <!-- 2. رابط للواجهة الأمامية (اختياري) -->
         <div class="hidden md:flex">
-             <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('View Site') }}
+            <x-nav-link :href="url('/')" :active="request()->routeIs('home')">
+    {{ __('Home') }}
+</x-nav-link> 
+            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                {{ __('Dashboard') }}
             </x-nav-link>
         </div>
 

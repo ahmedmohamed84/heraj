@@ -41,12 +41,12 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900">
-                                            {{ $page->title }}
+                                            {{ $page->translated_title }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-500">
-                                            {{ $page->slug }}
+                                            {{ $page->translated_slug }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

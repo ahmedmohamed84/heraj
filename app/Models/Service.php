@@ -48,4 +48,9 @@ class Service extends Model
     {
         return $this->belongsToMany(Attribute::class, 'attribute_service')->withPivot('value');
     }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

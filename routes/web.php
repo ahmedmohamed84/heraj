@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -30,6 +32,15 @@ Route::middleware('auth')->group(function () {
     // User's services (Ads) management
     Route::get('my-services', [ServiceController::class, 'myServices'])->name('services.my');
     Route::resource('services', ServiceController::class)->except(['index', 'show']);
+
+    // User-to-user messaging
+    Route::post('conversations/start', [ConversationController::class, 'startOrShow'])->name('conversations.start');
+    Route::get('conversations', [ConversationController::class, 'index'])->name('conversations.index');
+    Route::get('conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+    
+    // API routes for real-time chat
+    Route::get('conversations/{conversation}/messages', [ConversationController::class, 'getMessagesJson'])->name('conversations.messages.json');
+    Route::post('conversations/{conversation}/messages', [MessageController::class, 'storeJson'])->name('messages.store.json');
 });
 
 // Publicly accessible service routes
@@ -67,6 +78,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/debug-translations/{locale}', function ($locale) {
     return response()->json(app('translator')->getLoader()->load($locale, '*', '*'));
 });
+
+Route::get('/{slug}', [PageController::class, 'show'])->name('page.show');
 
 // Route:get('/{slug}', [PageController::class, 'show'])->name('page.show');
 Route::get('/debug-trans', function () {
