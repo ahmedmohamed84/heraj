@@ -15,11 +15,13 @@ class Service extends Model
         'category_id',
         'city_id',
         'title',
+        'slug',
         'description',
         'price',
         'phone',
         'status',
         'image',
+        'is_active',
     ];
 
     public function user()
@@ -37,7 +39,7 @@ class Service extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function images(): HasMany
+    public function gallery(): HasMany
     {
         return $this->hasMany(ServiceImage::class);
     }

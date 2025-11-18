@@ -3,150 +3,231 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\City;
 use App\Models\Service;
+use App\Models\ServiceImage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $services = Service::latest()->paginate(20);
+        $services = Service::where('is_active', true)
+            ->latest()
+            ->with('category', 'city')
+            ->paginate(15);
+
         return view('services.index', compact('services'));
     }
 
     /**
+     * Display a listing of the user's own services.
+     */
+    public function myServices()
+    {
+        $services = Service::where('user_id', auth()->id())
+            ->latest()
+            ->with('category', 'city')
+            ->paginate(15);
+
+        return view('services.my-services', compact('services'));
+    }
+
+    /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        // We need to pass all categories to the view for the dropdown
-        $categories = Category::all();
-        return view('services.create', compact('categories'));
+        $categories = Category::whereNull('parent_id')->get();
+        $cities = City::all();
+        return view('services.create', compact('categories', 'cities'));
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'city_id' => 'required|exists:cities,id',
             'category_id' => 'required|exists:categories,id',
-            // Add other service fields validation here (description, price, etc.)
-            'attributes' => 'nullable|array'
+            'phone' => 'required|string|max:20',
+            'description' => 'required|string',
+            'main_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'attributes' => 'nullable|array',
         ]);
 
-        // Create the main service record
+        // Handle main image upload
+        $mainImagePath = $request->file('main_image')->store('services/main', 'public');
+
         $service = Service::create([
-            'user_id' => Auth::id(),
-            'title' => $validatedData['title'],
-            'category_id' => $validatedData['category_id'],
-            // Add other fields here
+            'user_id' => auth()->id(),
+            'title' => $validated['title'],
+            'slug' => Str::slug($validated['title']) . '-' . uniqid(),
+            'price' => $validated['price'],
+            'city_id' => $validated['city_id'],
+            'category_id' => $validated['category_id'],
+            'phone' => $validated['phone'],
+            'description' => $validated['description'],
+            'image' => $mainImagePath,
+            'is_active' => false,
         ]);
 
-        // Prepare the attributes for sync
-        if (!empty($validatedData['attributes'])) {
+        // Handle gallery images upload
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $galleryImage) {
+                $path = $galleryImage->store('services/gallery', 'public');
+                $service->gallery()->create(['path' => $path]);
+            }
+        }
+
+        // Save dynamic attributes
+        if (!empty($validated['attributes'])) {
             $attributesToSync = [];
-            foreach ($validatedData['attributes'] as $attributeId => $value) {
-                // Ensure value is not null before syncing
-                if ($value !== null) {
-                    $attributesToSync[$attributeId] = ['value' => $value];
+            foreach ($validated['attributes'] as $attributeId => $data) {
+                if (isset($data['value']) && $data['value'] !== null) {
+                    $attributesToSync[$attributeId] = ['value' => $data['value']];
                 }
             }
-            // Sync the attributes with their values
             $service->attributes()->sync($attributesToSync);
         }
 
-        // Redirect to the service page or a success page
-        return redirect()->route('services.show', $service)->with('success', 'Service created successfully!');
+        return redirect()->route('services.my')->with('success', __('Service created successfully. It is pending admin approval.'));
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\Response
      */
     public function show(Service $service)
     {
-        // Placeholder for viewing a single service
-        return view('services.show', compact('service'));
+        // Eager load all necessary relationships for the main service
+        $service->load(['user', 'category', 'city', 'gallery', 'attributes']);
+
+        // Fetch related services from the same category
+        $relatedServices = Service::where('category_id', $service->category_id)
+            ->where('id', '!=', $service->id) // Exclude the current service
+            ->where('is_active', true) // Only show active services
+            ->with(['city', 'category']) // Eager load for performance
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        return view('services.show', compact('service', 'relatedServices'));
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\Response
      */
     public function edit(Service $service)
     {
-        // Eager load the relationships needed
-        $service->load('attributes');
-        $categories = Category::all();
+        // Authorization: Ensure the user owns this service
+        if (auth()->id() !== $service->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // Create a simple map of [attribute_id => value] for easy lookup in the view
-        $serviceAttributes = $service->attributes->pluck('pivot.value', 'id');
+        $service->load('attributes', 'gallery');
+        $categories = Category::whereNull('parent_id')->get();
+        $cities = City::all();
 
-        return view('services.edit', compact('service', 'categories', 'serviceAttributes'));
+        // Create a simple key-value array of saved attributes for JS
+        $savedAttributes = $service->attributes->pluck('pivot.value', 'id')->toArray();
+
+        return view('services.edit', compact('service', 'categories', 'cities', 'savedAttributes'));
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Service $service)
     {
-        $validatedData = $request->validate([
+        // Authorization: Ensure the user owns this service
+        if (auth()->id() !== $service->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'city_id' => 'required|exists:cities,id',
             'category_id' => 'required|exists:categories,id',
-            'attributes' => 'nullable|array'
+            'phone' => 'required|string|max:20',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Nullable on update
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'attributes' => 'nullable|array',
         ]);
 
-        // Update the main service record
-        $service->update($validatedData);
+        // Handle main image update
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+            // Store new image
+            $validated['image'] = $request->file('image')->store('services/main', 'public');
+        }
 
-        // Prepare and sync attributes
+        // Handle gallery images update
+        if ($request->hasFile('gallery_images')) {
+            // Note: This adds new images. For a full replacement, you'd delete old ones first.
+            // To keep it simple, we'll just add new ones. A more complex UI could manage individual deletions.
+            foreach ($request->file('gallery_images') as $galleryImage) {
+                $path = $galleryImage->store('services/gallery', 'public');
+                $service->gallery()->create(['path' => $path]);
+            }
+        }
+
+        $service->update($validated);
+
+        // Sync attributes
         $attributesToSync = [];
-        if (!empty($validatedData['attributes'])) {
-            foreach ($validatedData['attributes'] as $attributeId => $value) {
-                if ($value !== null) {
-                    $attributesToSync[$attributeId] = ['value' => $value];
+        if (!empty($validated['attributes'])) {
+            foreach ($validated['attributes'] as $attributeId => $data) {
+                 if (isset($data['value']) && $data['value'] !== null) {
+                    $attributesToSync[$attributeId] = ['value' => $data['value']];
                 }
             }
         }
         $service->attributes()->sync($attributesToSync);
 
-        return redirect()->route('services.show', $service)->with('success', 'Service updated successfully!');
+
+        return redirect()->route('services.my')->with('success', __('Service updated successfully.'));
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Service  $service
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Service $service)
     {
-        // Optional: Add authorization check here to ensure the user can delete this service
-        // For example: $this->authorize('delete', $service);
+        // Authorization: Ensure the user owns this service
+        if (auth()->id() !== $service->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
 
+        // Delete main image from storage
+        if ($service->main_image) {
+            Storage::disk('public')->delete($service->main_image);
+        }
+
+        // Delete gallery images from storage
+        foreach ($service->gallery as $image) {
+            Storage::disk('public')->delete($image->path);
+            // The model event on ServiceImage should handle deleting the DB record.
+        }
+
+        // The service's deleting event (if set up) or a DB cascade should handle related records.
         $service->delete();
 
-        return redirect()->route('services.index')->with('success', 'Service deleted successfully!');
+        return redirect()->route('services.my')->with('success', __('Service deleted successfully.'));
     }
 }

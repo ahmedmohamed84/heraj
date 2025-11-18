@@ -1,138 +1,75 @@
-@extends('layouts.new_app')
-
-@section('content')
-<!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Sidebar -->
-            <aside class="lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">تصنيفات الخدمات</h2>
-                    <div class="space-y-2">
-                        @php
-                            $categories = [
-                                ['icon' => 'laptop-code', 'name' => 'البرمجة والتقنية'],
-                                ['icon' => 'paint-brush', 'name' => 'التصميم والإبداع'],
-                                ['icon' => 'bullhorn', 'name' => 'التسويق الرقمي'],
-                                ['icon' => 'file-alt', 'name' => 'الكتابة والترجمة'],
-                                ['icon' => 'video', 'name' => 'الفيديو والصوتيات'],
-                                ['icon' => 'shopping-cart', 'name' => 'المبيعات والخدمات'],
-                            ];
-                        @endphp
-
-                        @foreach($categories as $category)
-                            <div class="category-item border border-gray-200 rounded-lg p-3 cursor-pointer transition-colors duration-200">
-                                <div class="flex items-center space-x-3 space-x-reverse">
-                                    <div class="bg-blue-50 w-10 h-10 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-{{ $category['icon'] }} text-blue-600"></i>
-                                    </div>
-                                    <span class="font-medium text-gray-700">{{ $category['name'] }}</span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-lg font-bold text-gray-900 mb-4">تصفية النتائج</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">السعر</label>
-                            <div class="flex items-center space-x-2 space-x-reverse">
-                                <input type="number" placeholder="من" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100">
-                                <span class="text-gray-500">إلى</span>
-                                <input type="number" placeholder="إلى" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100">
+<x-app-layout>
+    <div dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+        <!-- Hero Section -->
+        <div class="bg-white dark:bg-gray-800 shadow">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="py-12 text-center">
+                    <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+                        {{ __('Find The Perfect Service') }}
+                    </h1>
+                    <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                        {{ __('Discover services from talented people for your projects.') }}
+                    </p>
+                    <div class="mt-8 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                        <div class="relative rounded-md shadow-sm w-full">
+                            <input type="search" name="search" id="search" class="form-input block w-full pr-10 sm:text-sm sm:leading-5" placeholder="{{ __('Search for services...') }}">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                </svg>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">التقييم</label>
-                            <div class="flex space-x-1 space-x-reverse">
-                                @for($i = 1; $i <= 5; $i++)
-                                    <button class="text-yellow-400"><i class="fas fa-star"></i></button>
-                                @endfor
-                            </div>
-                        </div>
-                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors duration-200">
-                            تطبيق التصفية
-                        </button>
                     </div>
-                </div>
-            </aside>
-
-            <!-- Services Grid -->
-            <div class="flex-1">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">جميع الخدمات</h2>
-                    <div class="flex items-center space-x-2 space-x-reverse">
-                        <span class="text-gray-600">ترتيب حسب:</span>
-                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100">
-                            <option>الأحدث</option>
-                            <option>الأكثر مبيعاً</option>
-                            <option>الأعلى تقييماً</option>
-                            <option>السعر: منخفض إلى مرتفع</option>
-                            <option>السعر: مرتفع إلى منخفض</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Services Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @php
-                        $services = [
-                            ['title' => 'تصميم موقع ويب احترافي', 'price' => 50, 'rating' => 4.8, 'provider' => 'أحمد محمد', 'color' => '2563eb'],
-                            ['title' => 'تطوير تطبيق جوال', 'price' => 120, 'rating' => 4.9, 'provider' => 'سارة علي', 'color' => '1d4ed8'],
-                            ['title' => 'تصميم شعار احترافي', 'price' => 30, 'rating' => 4.7, 'provider' => 'خالد عبدالله', 'color' => 'dc2626'],
-                            ['title' => 'حملة تسويق رقمي', 'price' => 80, 'rating' => 4.6, 'provider' => 'منى أحمد', 'color' => '7c3aed'],
-                            ['title' => 'كتابة محتوى احترافي', 'price' => 25, 'rating' => 4.8, 'provider' => 'فاطمة حسن', 'color' => 'ea580c'],
-                            ['title' => 'تحرير فيديو احترافي', 'price' => 60, 'rating' => 4.9, 'provider' => 'علي سالم', 'color' => '0891b2'],
-                        ];
-                    @endphp
-
-                    @foreach($services as $service)
-                        <div class="service-card bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300">
-                            <div class="h-48 bg-gray-200 relative">
-                                <img src="https://placehold.co/400x300/{{ $service['color'] }}/white?text={{ urlencode($service['title']) }}" alt="{{ $service['title'] }}" class="w-full h-full object-cover">
-                                <div class="absolute top-3 right-3 bg-blue-600 text-white px-2 py-1 rounded-lg text-sm font-medium">
-                                    ${{ $service['price'] }}
-                                </div>
-                            </div>
-                            <div class="p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h3 class="font-bold text-lg text-gray-900">{{ $service['title'] }}</h3>
-                                    <div class="flex items-center space-x-1 space-x-reverse">
-                                        <i class="fas fa-star text-yellow-400"></i>
-                                        <span class="text-sm text-gray-600">{{ $service['rating'] }}</span>
-                                    </div>
-                                </div>
-                                <p class="text-gray-600 text-sm mb-3">وصف مختصر للخدمة يوضح ما الذي سيحصل عليه العميل عند طلب هذه الخدمة.</p>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2 space-x-reverse">
-                                        <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
-                                        <span class="text-sm font-medium text-gray-700">{{ $service['provider'] }}</span>
-                                    </div>
-                                    <a href="#" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm transition-colors duration-200">
-                                        عرض التفاصيل
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                <!-- Pagination -->
-                <div class="mt-8 flex items-center justify-center space-x-2 space-x-reverse">
-                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        السابق
-                    </button>
-                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">1</button>
-                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">2</button>
-                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">3</button>
-                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                        التالي
-                    </button>
                 </div>
             </div>
         </div>
-    </main>
-@endsection
+
+        <!-- Categories Section -->
+        @if($categories->isNotEmpty())
+        <div class="py-12 bg-gray-50 dark:bg-gray-900">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white text-center mb-8">{{ __('Browse Categories') }}</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
+                    @foreach ($categories as $category)
+                        <a href="{{ route('categories.show', $category) }}" class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                            {{-- Assuming you have an icon field or similar --}}
+                            <div class="flex items-center justify-center h-16 w-16 bg-indigo-100 dark:bg-indigo-900 rounded-full mx-auto mb-4">
+                                <svg class="h-8 w-8 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm0 14h.01M7 17h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2z"></path></svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $category->name }}</h3>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Latest Services Section -->
+        @if($services->isNotEmpty())
+        <div class="py-12 bg-white dark:bg-gray-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white text-center mb-8">{{ __('Latest Ads') }}</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @foreach ($services as $service)
+                        <a href="{{ route('services.show', $service) }}" class="block group bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                            <img class="h-48 w-full object-cover" src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{{ $service->title }}</h3>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400 text-sm">{{ $service->category->name }}</p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ number_format($service->price) }} {{ __('SAR') }}</p>
+                                    <div class="text-sm text-gray-500">
+                                        <span>{{ $service->city->name ?? '' }}</span>
+                                        <span class="mx-1">&middot;</span>
+                                        <span>{{ $service->created_at->diffForHumans() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+</x-app-layout>

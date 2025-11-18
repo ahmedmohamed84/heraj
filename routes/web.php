@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
@@ -8,9 +10,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('lang/{code}', [LanguageController::class, 'switch'])->name('lang.switch');
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Add category show route
+Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -21,9 +25,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/categories/{category}/attributes', [\App\Http\Controllers\CategoryController::class, 'getAttributes'])->name('categories.attributes');
-    Route::resource('services', ServiceController::class);
+    Route::get('/categories/{category}/attributes', [CategoryController::class, 'getAttributes'])->name('categories.attributes');
+
+    // User's services (Ads) management
+    Route::get('my-services', [ServiceController::class, 'myServices'])->name('services.my');
+    Route::resource('services', ServiceController::class)->except(['index', 'show']);
 });
+
+// Publicly accessible service routes
+Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+Route::get('services/{service}', [ServiceController::class, 'show'])->name('services.show');
+
 
 
 require __DIR__.'/auth.php';
@@ -35,6 +47,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);
+    Route::get('services/pending', [\App\Http\Controllers\Admin\ServiceController::class, 'pending'])->name('services.pending');
+    Route::post('services/{service}/approve', [\App\Http\Controllers\Admin\ServiceController::class, 'approve'])->name('services.approve');
     Route::delete('services/images/{image}', [\App\Http\Controllers\Admin\ServiceController::class, 'deleteImage'])->name('services.images.delete');
     Route::resource('regions', \App\Http\Controllers\Admin\RegionController::class);
     Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);

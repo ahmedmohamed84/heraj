@@ -68,4 +68,33 @@ class Category extends Model
             $query->whereIn('categories.id', $categoryIds);
         })->get();
     }
+
+    /**
+     * Get the IDs of the current category and all its descendants.
+     *
+     * @return array
+     */
+    public function getDescendantIdsAndSelf()
+    {
+        $allCategories = Category::all();
+        $descendants = collect();
+        $this->getAllDescendants($this->id, $allCategories, $descendants);
+        return $descendants->pluck('id')->push($this->id)->all();
+    }
+
+    /**
+     * Recursively find all descendants for a given parent ID from a collection of categories.
+     *
+     * @param int $parentId
+     * @param \Illuminate\Support\Collection $allCategories
+     * @param \Illuminate\Support\Collection $descendants
+     */
+    private function getAllDescendants($parentId, $allCategories, &$descendants)
+    {
+        $children = $allCategories->where('parent_id', $parentId);
+        foreach ($children as $child) {
+            $descendants->push($child);
+            $this->getAllDescendants($child->id, $allCategories, $descendants);
+        }
+    }
 }

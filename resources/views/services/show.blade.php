@@ -1,49 +1,97 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $service->title }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
+    <div class="py-12 bg-gray-100">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Main Content -->
+                <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                    <!-- Main Image -->
+                    <div class="mb-6">
+                        <img src="{{ asset('storage/' . $service->image) }}" alt="{{ $service->title }}" class="w-full h-auto object-cover rounded-lg shadow-lg">
+                    </div>
 
-                    @if (session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <span class="block sm:inline">{{ session('success') }}</span>
-                        </div>
-                    @endif
-
-                    <h3 class="text-2xl font-bold text-gray-900">{{ $service->title }}</h3>
-                    <p class="mt-1 text-sm text-gray-600">
-                        Posted in <a href="#" class="text-indigo-600 hover:underline">{{ $service->category->name }}</a> by {{ $service->user->name }}
-                    </p>
-
-                    {{-- Add other service details here, like description, price, etc. --}}
-                    {{-- <p class="mt-4 text-gray-800">{{ $service->description }}</p> --}}
-                    {{-- <p class="mt-4 text-2xl font-bold text-gray-900">${{ number_format($service->price, 2) }}</p> --}}
-
-                    @if($service->attributes->count() > 0)
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <h4 class="text-lg font-medium text-gray-900">Specifications</h4>
-                            <dl class="mt-2 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                                @foreach($service->attributes as $attribute)
-                                    <div class="sm:col-span-1">
-                                        <dt class="text-sm font-medium text-gray-500">{{ $attribute->name }}</dt>
-                                        <dd class="mt-1 text-sm text-gray-900">{{ $attribute->pivot->value }}</dd>
+                    <!-- Gallery Images -->
+                    @if($service->gallery->count() > 0)
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">{{ __('Gallery') }}</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach($service->gallery as $image)
+                                    <div class="relative">
+                                        <img src="{{ asset('storage/' . $image->path) }}" alt="Gallery image" class="w-full h-32 object-cover rounded-md shadow-sm">
                                     </div>
                                 @endforeach
-                            </dl>
+                            </div>
                         </div>
                     @endif
+                    <!-- Service Title -->
+                    <h1 class="text-4xl font-extrabold text-gray-900 mb-2">{{ $service->title }}</h1>
+                    <!-- Price -->
+                    <p class="text-3xl font-bold text-blue-600 mb-4">{{ number_format($service->price, 2) }} {{ __('EGP') }}</p>
 
-                    <div class="mt-6 flex justify-end">
-                        <a href="{{ route('services.edit', $service) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:border-blue-700 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                            {{ __('Edit') }}
-                        </a>
+                    <!-- Description -->
+                    <div class="prose max-w-none text-gray-700 mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">{{ __('Description') }}</h3>
+                        <p>{!! nl2br(e($service->description)) !!}</p>
                     </div>
+
+                    <!-- Attributes -->
+                    @if($service->attributes->count() > 0)
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">{{ __('Details') }}</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
+                                @foreach($service->attributes as $attribute)
+                                    <div class="flex justify-between border-b pb-2">
+                                        <span class="font-semibold text-gray-600">{{ $attribute->name }}:</span>
+                                        <span class="text-gray-800 font-medium">{{ $attribute->pivot->value }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Sidebar -->
+                <div class="md:col-span-1 space-y-6">
+                    <!-- User Info -->
+                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ __('Seller Information') }}</h3>
+                        <p class="text-lg text-gray-700 font-semibold">{{ $service->user->name }}</p>
+                        <p class="text-gray-500">{{ __('Member since') }} {{ $service->user->created_at->format('M Y') }}</p>
+                        <div class="mt-4">
+                            <a href="tel:{{ $service->phone }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-500 text-white font-bold rounded-md hover:bg-green-600 transition">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                {{ $service->phone }}
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Location Info -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">{{ __('Location') }}</h3>
+                        <p class="text-gray-700"><span class="font-semibold">{{ __('City') }}:</span> {{ $service->city->name }}</p>
+                        <p class="text-gray-700"><span class="font-semibold">{{ __('Category') }}:</span> {{ $service->category->name }}</p>
+                        <p class="text-gray-500 mt-2 text-sm">{{ __('Posted') }} {{ $service->created_at->diffForHumans() }}</p>
+                    </div>
+
+                    <!-- Related Services -->
+                    @if($relatedServices->count() > 0)
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{{ __('Related Ads') }}</h3>
+                            <div class="space-y-4">
+                                @foreach($relatedServices as $related)
+                                    <a href="{{ route('services.show', $related) }}" class="block group">
+                                        <div class="flex items-center space-x-4">
+                                            <img src="{{ asset('storage/' . $related->image) }}" alt="{{ $related->title }}" class="w-20 h-20 object-cover rounded-md shadow-sm">
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800 group-hover:text-blue-600 transition">{{ $related->title }}</h4>
+                                                <p class="text-blue-500 font-bold">{{ number_format($related->price, 2) }} {{ __('SAR') }}</p>
+                                                <p class="text-sm text-gray-500">{{ $related->city->name }}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

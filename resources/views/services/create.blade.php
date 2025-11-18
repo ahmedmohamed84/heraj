@@ -6,38 +6,89 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <form action="{{ route('services.store') }}" method="POST">
-                        @csrf
+                <div class="p-6 md:p-8 bg-white border-b border-gray-200">
 
-                        <!-- Service Title -->
-                        <div class="mb-4">
-                            <label for="title" class="block text-sm font-medium text-gray-700">{{ __('Title') }}</label>
-                            <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                        </div>
-
-                        <!-- Category Dropdown -->
-                        <div class="mb-4">
-                            <label for="category_id" class="block text-sm font-medium text-gray-700">{{ __('Category') }}</label>
-                            <select name="category_id" id="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                                <option value="">-- Select a Category --</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
                                 @endforeach
-                            </select>
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('services.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Title -->
+                            <div class="md:col-span-2">
+                                <label for="title" class="block font-medium text-sm text-gray-700">{{ __('Title') }}</label>
+                                <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('title') }}" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div>
+                                <label for="category_id" class="block font-medium text-sm text-gray-700">{{ __('Category') }}</label>
+                                <select name="category_id" id="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                    <option value="">{{ __('Select a Category') }}</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- City -->
+                            <div>
+                                <label for="city_id" class="block font-medium text-sm text-gray-700">{{ __('City') }}</label>
+                                <select name="city_id" id="city_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                    <option value="">{{ __('Select a City') }}</option>
+                                    @foreach ($cities as $city)
+                                        <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Price -->
+                            <div>
+                                <label for="price" class="block font-medium text-sm text-gray-700">{{ __('Price') }}</label>
+                                <input type="number" name="price" id="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('price') }}" required>
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <label for="phone" class="block font-medium text-sm text-gray-700">{{ __('Contact Phone') }}</label>
+                                <input type="text" name="phone" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('phone') }}" required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="md:col-span-2">
+                                <label for="description" class="block font-medium text-sm text-gray-700">{{ __('Description') }}</label>
+                                <textarea name="description" id="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>{{ old('description') }}</textarea>
+                            </div>
+
+                            <!-- Main Image -->
+                            <div class="md:col-span-2">
+                                <label for="main_image" class="block font-medium text-sm text-gray-700">{{ __('Main Image') }}</label>
+                                <input type="file" name="main_image" id="main_image" class="mt-1 block w-full" required>
+                            </div>
+
+                            <!-- Gallery Images -->
+                            <div class="md:col-span-2">
+                                <label for="gallery_images" class="block font-medium text-sm text-gray-700">{{ __('Gallery Images (optional)') }}</label>
+                                <input type="file" name="gallery_images[]" id="gallery_images" class="mt-1 block w-full" multiple>
+                            </div>
+
+                            <!-- Dynamic Attributes Wrapper -->
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6" id="attributes-wrapper">
+                                <!-- Attributes will be loaded here -->
+                            </div>
                         </div>
 
-                        <!-- Dynamic Attributes Container -->
-                        <div id="attributes-container" class="mb-4">
-                            <!-- Attributes will be loaded here dynamically -->
-                        </div>
-
-                        <!-- Other service fields like description, price can be added here -->
-
-                        <div class="flex items-center justify-end mt-4">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                        <div class="flex items-center justify-end mt-6">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 {{ __('Create Service') }}
                             </button>
                         </div>
@@ -47,23 +98,23 @@
         </div>
     </div>
 
+    @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const categorySelect = document.getElementById('category_id');
-            const attributesContainer = document.getElementById('attributes-container');
+            const attributesWrapper = document.getElementById('attributes-wrapper');
+            // Route for fetching attributes, defined in web.php
+            const attributesUrl = '{{ route("categories.attributes", ["category" => ":id"]) }}';
 
             categorySelect.addEventListener('change', function () {
                 const categoryId = this.value;
-                attributesContainer.innerHTML = ''; // Clear previous attributes
+                attributesWrapper.innerHTML = ''; // Clear previous attributes
 
                 if (!categoryId) {
                     return;
                 }
 
-                // Use the new web route
-                const url = `/categories/${categoryId}/attributes`;
-
-                fetch(url)
+                fetch(attributesUrl.replace(':id', categoryId))
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
@@ -72,49 +123,64 @@
                     })
                     .then(attributes => {
                         if (attributes.length === 0) {
-                            attributesContainer.innerHTML = '<p class="text-gray-500">No specific attributes for this category.</p>';
-                            return;
-                        }
-                        
-                        let html = '<h3 class="text-lg font-medium text-gray-900 mb-2">Category Attributes</h3>';
-                        attributes.forEach(attribute => {
-                            html += `<div class="mb-3"><label for="attribute_${attribute.id}" class="block text-sm font-medium text-gray-700">${attribute.name}</label>`;
-                            
-                            switch (attribute.type) {
-                                case 'text':
-                                    html += `<input type="text" name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    break;
-                                case 'number':
-                                    html += `<input type="number" name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    break;
-                                case 'select':
-                                    html += `<select name="attributes[${attribute.id}]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    attribute.options.forEach(option => {
-                                        html += `<option value="${option.value}">${option.value}</option>`;
-                                    });
-                                    html += `</select>`;
-                                    break;
-                                case 'radio':
-                                    attribute.options.forEach(option => {
-                                        html += `<div class="flex items-center"><input type="radio" name="attributes[${attribute.id}]" value="${option.value}" class="mr-2"><label>${option.value}</label></div>`;
-                                    });
-                                    break;
-                                case 'checkbox':
-                                    attribute.options.forEach(option => {
-                                        html += `<div class="flex items-center"><input type="checkbox" name="attributes[${attribute.id}][]" value="${option.value}" class="mr-2"><label>${option.value}</label></div>`;
-                                    });
-                                    break;
-                            }
+                            attributesWrapper.innerHTML = `<p class="text-gray-500 md:col-span-2">{{ __('No specific attributes for this category.') }}</p>`;
+                        } else {
+                            attributes.forEach(attribute => {
+                                const attributeContainer = document.createElement('div');
+                                let attributeField = '';
 
-                            html += `</div>`;
-                        });
-                        attributesContainer.innerHTML = html;
+                                const label = `<label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700">${attribute.name}</label>`;
+
+                                switch (attribute.type) {
+                                    case 'text':
+                                        attributeField = `<input type="text" name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
+                                        break;
+                                    case 'textarea':
+                                        attributeField = `<textarea name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>`;
+                                        break;
+                                    case 'select':
+                                        let optionsHtml = '<option value="">{{ __("Select an option") }}</option>';
+                                        attribute.options.forEach(option => {
+                                            optionsHtml += `<option value="${option.value}">${option.value}</option>`;
+                                        });
+                                        attributeField = `<select name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${optionsHtml}</select>`;
+                                        break;
+                                    case 'radio':
+                                        attributeField = '<div class="mt-2 space-y-2">';
+                                        attribute.options.forEach((option, index) => {
+                                            attributeField += `
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="attributes[${attribute.id}][value]" value="${option.value}" class="form-radio">
+                                                    <span class="ml-2">${option.value}</span>
+                                                </label>`;
+                                        });
+                                        attributeField += '</div>';
+                                        break;
+                                    case 'checkbox':
+                                         // For single checkbox, we can treat it as a boolean
+                                        attributeField = `
+                                            <label class="inline-flex items-center mt-2">
+                                                <input type="hidden" name="attributes[${attribute.id}][value]" value="0">
+                                                <input type="checkbox" name="attributes[${attribute.id}][value]" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                                <span class="ml-2 text-sm text-gray-600">${attribute.name}</span>
+                                            </label>`;
+                                        // For checkbox group, logic would be different, assuming single for now.
+                                        attributeContainer.innerHTML = attributeField; // No separate label for single checkbox
+                                        attributesWrapper.appendChild(attributeContainer);
+                                        return; // skip default label append
+                                }
+
+                                attributeContainer.innerHTML = label + attributeField;
+                                attributesWrapper.appendChild(attributeContainer);
+                            });
+                        }
                     })
                     .catch(error => {
                         console.error('Error fetching attributes:', error);
-                        attributesContainer.innerHTML = '<p class="text-red-500">Could not load attributes.</p>';
+                        attributesWrapper.innerHTML = `<p class="text-red-500 md:col-span-2">{{ __('Failed to load attributes.') }}</p>`;
                     });
             });
         });
     </script>
+    @endpush
 </x-app-layout>

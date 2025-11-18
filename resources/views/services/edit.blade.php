@@ -1,44 +1,107 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Edit Service') }}
+            {{ __('Edit Service') }}: {{ $service->title }}
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <form action="{{ route('services.update', $service) }}" method="POST">
-                        @csrf
-                        @method('PATCH')
+                <div class="p-6 md:p-8 bg-white border-b border-gray-200">
 
-                        <!-- Service Title -->
-                        <div class="mb-4">
-                            <label for="title" class="block text-sm font-medium text-gray-700">{{ __('Title') }}</label>
-                            <input type="text" name="title" id="title" value="{{ old('title', $service->title) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                        </div>
-
-                        <!-- Category Dropdown -->
-                        <div class="mb-4">
-                            <label for="category_id" class="block text-sm font-medium text-gray-700">{{ __('Category') }}</label>
-                            <select name="category_id" id="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
-                                <option value="">-- Select a Category --</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" @selected(old('category_id', $service->category_id) == $category->id)>
-                                        {{ $category->name }}
-                                    </option>
+                    @if ($errors->any())
+                        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
                                 @endforeach
-                            </select>
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('services.update', $service) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Title -->
+                            <div class="md:col-span-2">
+                                <label for="title" class="block font-medium text-sm text-gray-700">{{ __('Title') }}</label>
+                                <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('title', $service->title) }}" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div>
+                                <label for="category_id" class="block font-medium text-sm text-gray-700">{{ __('Category') }}</label>
+                                <select name="category_id" id="category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                    <option value="">{{ __('Select a Category') }}</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}" @selected(old('category_id', $service->category_id) == $category->id)>{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- City -->
+                            <div>
+                                <label for="city_id" class="block font-medium text-sm text-gray-700">{{ __('City') }}</label>
+                                <select name="city_id" id="city_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                    <option value="">{{ __('Select a City') }}</option>
+                                    @foreach ($cities as $city)
+                                        <option value="{{ $city->id }}" @selected(old('city_id', $service->city_id) == $city->id)>{{ $city->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Price -->
+                            <div>
+                                <label for="price" class="block font-medium text-sm text-gray-700">{{ __('Price') }}</label>
+                                <input type="number" name="price" id="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('price', $service->price) }}" required>
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <label for="phone" class="block font-medium text-sm text-gray-700">{{ __('Contact Phone') }}</label>
+                                <input type="text" name="phone" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="{{ old('phone', $service->phone) }}" required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="md:col-span-2">
+                                <label for="description" class="block font-medium text-sm text-gray-700">{{ __('Description') }}</label>
+                                <textarea name="description" id="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>{{ old('description', $service->description) }}</textarea>
+                            </div>
+
+                            <!-- Main Image -->
+                            <div class="md:col-span-2">
+                                <label for="main_image" class="block font-medium text-sm text-gray-700">{{ __('Update Main Image (optional)') }}</label>
+                                <input type="file" name="main_image" id="main_image" class="mt-1 block w-full">
+                                @if($service->main_image)
+                                <div class="mt-2">
+                                    <img src="{{ Storage::url($service->main_image) }}" alt="Main Image" class="h-24 w-24 object-cover rounded">
+                                </div>
+                                @endif
+                            </div>
+
+                            <!-- Gallery Images -->
+                            <div class="md:col-span-2">
+                                <label for="gallery_images" class="block font-medium text-sm text-gray-700">{{ __('Add More Gallery Images (optional)') }}</label>
+                                <input type="file" name="gallery_images[]" id="gallery_images" class="mt-1 block w-full" multiple>
+                                @if($service->gallery->isNotEmpty())
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    @foreach($service->gallery as $image)
+                                    <img src="{{ Storage::url($image->path) }}" alt="Gallery Image" class="h-20 w-20 object-cover rounded">
+                                    @endforeach
+                                </div>
+                                @endif
+                            </div>
+
+                            <!-- Dynamic Attributes Wrapper -->
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6" id="attributes-wrapper">
+                                <!-- Attributes will be loaded here -->
+                            </div>
                         </div>
 
-                        <!-- Dynamic Attributes Container -->
-                        <div id="attributes-container" class="mb-4">
-                            <!-- Attributes will be loaded here dynamically -->
-                        </div>
-
-                        <div class="flex items-center justify-end mt-4">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                        <div class="flex items-center justify-end mt-6">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 {{ __('Update Service') }}
                             </button>
                         </div>
@@ -48,80 +111,98 @@
         </div>
     </div>
 
+    @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const categorySelect = document.getElementById('category_id');
-            const attributesContainer = document.getElementById('attributes-container');
-            const serviceAttributes = @json($serviceAttributes);
+            const attributesWrapper = document.getElementById('attributes-wrapper');
+            const attributesUrl = '{{ route("categories.attributes", ["category" => ":id"]) }}';
+            const savedAttributes = @json($savedAttributes);
 
-            function fetchAttributes(categoryId, existingAttributes) {
-                attributesContainer.innerHTML = ''; // Clear previous attributes
-                if (!categoryId) return;
+            function fetchAndRenderAttributes(categoryId) {
+                attributesWrapper.innerHTML = ''; // Clear previous attributes
 
-                const url = `/categories/${categoryId}/attributes`;
+                if (!categoryId) {
+                    return;
+                }
 
-                fetch(url)
-                    .then(response => response.json())
+                fetch(attributesUrl.replace(':id', categoryId))
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
                     .then(attributes => {
                         if (attributes.length === 0) {
-                            attributesContainer.innerHTML = '<p class="text-gray-500">No specific attributes for this category.</p>';
-                            return;
+                            attributesWrapper.innerHTML = `<p class="text-gray-500 md:col-span-2">{{ __('No specific attributes for this category.') }}</p>`;
+                        } else {
+                            attributes.forEach(attribute => {
+                                const savedValue = savedAttributes[attribute.id] || null;
+                                const attributeContainer = document.createElement('div');
+                                let attributeField = '';
+
+                                const label = `<label for="attribute_${attribute.id}" class="block font-medium text-sm text-gray-700">${attribute.name}</label>`;
+
+                                switch (attribute.type) {
+                                    case 'text':
+                                        attributeField = `<input type="text" name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="${savedValue || ''}">`;
+                                        break;
+                                    case 'textarea':
+                                        attributeField = `<textarea name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${savedValue || ''}</textarea>`;
+                                        break;
+                                    case 'select':
+                                        let optionsHtml = '<option value="">{{ __("Select an option") }}</option>';
+                                        attribute.options.forEach(option => {
+                                            const isSelected = savedValue == option.value ? 'selected' : '';
+                                            optionsHtml += `<option value="${option.value}" ${isSelected}>${option.value}</option>`;
+                                        });
+                                        attributeField = `<select name="attributes[${attribute.id}][value]" id="attribute_${attribute.id}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">${optionsHtml}</select>`;
+                                        break;
+                                    case 'radio':
+                                        attributeField = '<div class="mt-2 space-y-2">';
+                                        attribute.options.forEach(option => {
+                                            const isChecked = savedValue == option.value ? 'checked' : '';
+                                            attributeField += `
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="attributes[${attribute.id}][value]" value="${option.value}" class="form-radio" ${isChecked}>
+                                                    <span class="ml-2">${option.value}</span>
+                                                </label>`;
+                                        });
+                                        attributeField += '</div>';
+                                        break;
+                                    case 'checkbox':
+                                        const isChecked = savedValue == "1" ? 'checked' : '';
+                                        attributeField = `
+                                            <label class="inline-flex items-center mt-2">
+                                                <input type="hidden" name="attributes[${attribute.id}][value]" value="0">
+                                                <input type="checkbox" name="attributes[${attribute.id}][value]" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm" ${isChecked}>
+                                                <span class="ml-2 text-sm text-gray-600">${attribute.name}</span>
+                                            </label>`;
+                                        attributeContainer.innerHTML = attributeField;
+                                        attributesWrapper.appendChild(attributeContainer);
+                                        return;
+                                }
+
+                                attributeContainer.innerHTML = label + attributeField;
+                                attributesWrapper.appendChild(attributeContainer);
+                            });
                         }
-
-                        let html = '<h3 class="text-lg font-medium text-gray-900 mb-2">Category Attributes</h3>';
-                        attributes.forEach(attribute => {
-                            const existingValue = existingAttributes[attribute.id] || '';
-                            html += `<div class="mb-3"><label class="block text-sm font-medium text-gray-700">${attribute.name}</label>`;
-
-                            switch (attribute.type) {
-                                case 'text':
-                                    html += `<input type="text" name="attributes[${attribute.id}]" value="${existingValue}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    break;
-                                case 'number':
-                                    html += `<input type="number" name="attributes[${attribute.id}]" value="${existingValue}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    break;
-                                case 'select':
-                                    html += `<select name="attributes[${attribute.id}]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">`;
-                                    attribute.options.forEach(option => {
-                                        const selected = option.value == existingValue ? 'selected' : '';
-                                        html += `<option value="${option.value}" ${selected}>${option.value}</option>`;
-                                    });
-                                    html += `</select>`;
-                                    break;
-                                case 'radio':
-                                    attribute.options.forEach(option => {
-                                        const checked = option.value == existingValue ? 'checked' : '';
-                                        html += `<div class="flex items-center"><input type="radio" name="attributes[${attribute.id}]" value="${option.value}" ${checked} class="mr-2"><label>${option.value}</label></div>`;
-                                    });
-                                    break;
-                                case 'checkbox':
-                                    const existingValues = Array.isArray(existingValue) ? existingValue : (existingValue ? existingValue.split(',') : []);
-                                    attribute.options.forEach(option => {
-                                        const checked = existingValues.includes(option.value) ? 'checked' : '';
-                                        html += `<div class="flex items-center"><input type="checkbox" name="attributes[${attribute.id}][]" value="${option.value}" ${checked} class="mr-2"><label>${option.value}</label></div>`;
-                                    });
-                                    break;
-                            }
-
-                            html += `</div>`;
-                        });
-                        attributesContainer.innerHTML = html;
                     })
                     .catch(error => {
                         console.error('Error fetching attributes:', error);
-                        attributesContainer.innerHTML = '<p class="text-red-500">Could not load attributes.</p>';
+                        attributesWrapper.innerHTML = `<p class="text-red-500 md:col-span-2">{{ __('Failed to load attributes.') }}</p>`;
                     });
             }
 
-            // Fetch attributes when the category changes
+            // Fetch attributes on category change
             categorySelect.addEventListener('change', function () {
-                fetchAttributes(this.value, {}); 
+                fetchAndRenderAttributes(this.value);
             });
 
-            // Fetch attributes on initial page load for the current category
+            // Fetch initial attributes on page load
             if (categorySelect.value) {
-                fetchAttributes(categorySelect.value, serviceAttributes);
+                fetchAndRenderAttributes(categorySelect.value);
             }
         });
     </script>
+    @endpush
 </x-app-layout>

@@ -184,6 +184,30 @@ class ServiceController extends Controller
     }
 
     /**
+     * Display a listing of pending services.
+     */
+    public function pending()
+    {
+        $services = Service::where('is_active', false)
+            ->with(['user', 'category', 'city'])
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.services.pending', compact('services'));
+    }
+
+    /**
+     * Approve a pending service.
+     */
+    public function approve(Service $service)
+    {
+        $service->is_active = true;
+        $service->save();
+
+        return redirect()->route('admin.services.pending')->with('success', 'Service approved successfully.');
+    }
+
+    /**
      * Delete an image from the service gallery.
      */
     public function deleteImage($imageId)
